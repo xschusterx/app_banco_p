@@ -7,8 +7,19 @@
     <meta name="theme-color" content="#1b3a2f" />
     <meta
       name="description"
-      content="Relato Campo — checklist com foto, ditado por voz e envio por e-mail."
+      content="Relato Campo — checklist de veículos com foto, ditado por voz e envio por e-mail."
     />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('relato-campo-theme');
+          if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+          else document.documentElement.setAttribute('data-theme', 'light');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

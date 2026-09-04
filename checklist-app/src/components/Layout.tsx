@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Layout() {
   return (
@@ -8,14 +9,17 @@ export function Layout() {
           <span className="brand-mark" aria-hidden />
           <span className="brand-text">Relato Campo</span>
         </Link>
-        <nav className="nav" aria-label="Principal">
-          <NavLink to="/" end>
-            Início
-          </NavLink>
-          <NavLink to="/novo">Novo</NavLink>
-          <NavLink to="/contatos">Contatos</NavLink>
-          <NavLink to="/historico">Histórico</NavLink>
-        </nav>
+        <div className="topbar-right">
+          <ThemeToggle />
+          <nav className="nav" aria-label="Principal">
+            <NavLink to="/" end>
+              Início
+            </NavLink>
+            <NavLink to="/novo">Novo</NavLink>
+            <NavLink to="/contatos">Contatos</NavLink>
+            <NavLink to="/historico">Histórico</NavLink>
+          </nav>
+        </div>
       </header>
       <main className="main">
         <Outlet />
