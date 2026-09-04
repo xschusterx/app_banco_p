@@ -1,8 +1,8 @@
 # Relato Campo
 
-App web de checklist de campo com:
+App web de checklist de veículos com:
 
-- marcação de itens
+- modelo base: farol, pneus, para-brisa e lataria (com opção de incluir outros itens)
 - captura de foto (câmera/galeria)
 - observações digitadas ou por ditado de voz
 - envio do relatório por e-mail

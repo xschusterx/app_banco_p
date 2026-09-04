@@ -11,7 +11,7 @@ import type { ChecklistItem, ChecklistReport } from '../types';
 export function NewChecklistPage() {
   const navigate = useNavigate();
   const initial = useMemo(() => loadData(), []);
-  const [title, setTitle] = useState('Vistoria de campo');
+  const [title, setTitle] = useState('Checklist de veículo');
   const [location, setLocation] = useState('');
   const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems));
   const [newItem, setNewItem] = useState('');
@@ -96,21 +96,25 @@ export function NewChecklistPage() {
   return (
     <div className="page form-page">
       <header className="page-intro">
-        <h1>Novo checklist</h1>
-        <p>Preencha os itens, registre foto e observações, depois envie aos destinatários.</p>
+        <h1>Novo checklist de veículo</h1>
+        <p>Conferir farol, pneus, para-brisa, lataria e o que mais precisar — com foto, voz e e-mail.</p>
       </header>
 
       <section className="form-block">
         <label className="field">
           <span>Título</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Inspeção matinal" />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ex.: Checklist diário da frota"
+          />
         </label>
         <label className="field">
-          <span>Local</span>
+          <span>Veículo / placa</span>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="Ex.: Obra Setor B / Galpão 3"
+            placeholder="Ex.: ABC1D23 · Fiat Strada"
           />
         </label>
       </section>
@@ -118,7 +122,7 @@ export function NewChecklistPage() {
       <section className="form-block">
         <div className="section-head">
           <h2>Itens do checklist</h2>
-          <p>Marque o que foi conferido. Inclua itens extras se precisar.</p>
+          <p>Base para veículos: farol, pneus, para-brisa e lataria. Inclua o que mais quiser conferir.</p>
         </div>
         <ul className="check-list">
           {items.map((item) => (
@@ -134,8 +138,8 @@ export function NewChecklistPage() {
           <input
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
-            placeholder="Novo item…"
-            aria-label="Novo item do checklist"
+            placeholder="O que mais quer conferir? Ex.: freios, óleo…"
+            aria-label="Novo item do checklist de veículo"
           />
           <button type="submit" className="btn ghost">
             Adicionar

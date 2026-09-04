@@ -11,9 +11,9 @@ export function HomePage() {
         <div className="hero-veil" aria-hidden />
         <div className="hero-copy">
           <p className="hero-brand">Relato Campo</p>
-          <h1>Checklist com foto, voz e envio direto por e-mail</h1>
+          <h1>Checklist de veículos com foto, voz e envio por e-mail</h1>
           <p className="hero-lead">
-            Registre a vistoria, tire a foto, dite as observações e encaminhe o relatório aos contatos salvos.
+            Confira farol, pneus, para-brisa e lataria, acrescente o que quiser, tire a foto e envie o relato.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" to="/novo">
@@ -29,20 +29,20 @@ export function HomePage() {
       <section className="home-panel">
         <div className="section-head">
           <h2>Como funciona</h2>
-          <p>Três passos para fechar a vistoria no celular.</p>
+          <p>Três passos para fechar a conferência do veículo.</p>
         </div>
         <ol className="steps">
           <li>
             <strong>Marque os itens</strong>
-            <span>Confira o que está ok no local e anote o que falta.</span>
+            <span>Use a base (farol, pneus, para-brisa, lataria) e inclua o que mais for conferir.</span>
           </li>
           <li>
             <strong>Foto e relato</strong>
-            <span>Capture a imagem e digite ou fale as observações.</span>
+            <span>Capture a imagem do veículo e digite ou fale as observações.</span>
           </li>
           <li>
             <strong>Envie por e-mail</strong>
-            <span>Use contatos salvos para reenviar em próximas vistorias.</span>
+            <span>Use contatos salvos para reenviar em próximos checklists da frota.</span>
           </li>
         </ol>
       </section>

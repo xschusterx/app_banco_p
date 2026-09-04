@@ -3,7 +3,7 @@ import type { ChecklistItem, ChecklistReport } from './types';
 export function buildEmailBody(report: ChecklistReport): string {
   const lines: string[] = [];
   lines.push(`Checklist: ${report.title}`);
-  if (report.location) lines.push(`Local: ${report.location}`);
+  if (report.location) lines.push(`Veículo / placa: ${report.location}`);
   lines.push(`Data: ${new Date(report.createdAt).toLocaleString('pt-BR')}`);
   lines.push('');
   lines.push('Itens verificados:');

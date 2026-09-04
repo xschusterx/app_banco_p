@@ -20,7 +20,7 @@ export function PhotoCapture({ photoDataUrl, onChange }: Props) {
   return (
     <section className="photo-block">
       <div className="section-head">
-        <h2>Foto do local</h2>
+        <h2>Foto do veículo</h2>
         <p>Tire uma foto ou escolha da galeria para anexar ao relato.</p>
       </div>
 

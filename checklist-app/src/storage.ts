@@ -1,13 +1,13 @@
 import type { AppData, ChecklistReport, Contact } from './types';
 
-const STORAGE_KEY = 'relato-campo-data-v1';
+const STORAGE_KEY = 'relato-campo-data-v2';
 
+/** Modelo base de checklist de veículos; o usuário pode incluir outros itens na tela. */
 const DEFAULT_ITEMS = [
-  'Área limpa e organizada',
-  'Equipamentos em condições de uso',
-  'Sinalização adequada',
-  'EPIs utilizados corretamente',
-  'Sem vazamentos ou irregularidades',
+  'Farol',
+  'Pneus',
+  'Para-brisa',
+  'Lataria',
 ];
 
 function emptyData(): AppData {
@@ -26,7 +26,8 @@ export function loadData(): AppData {
     return {
       contacts: parsed.contacts ?? [],
       reports: parsed.reports ?? [],
-      defaultItems: parsed.defaultItems?.length ? parsed.defaultItems : DEFAULT_ITEMS,
+      // Sempre usa o modelo atual de veículos; itens extras o usuário adiciona na tela.
+      defaultItems: DEFAULT_ITEMS,
     };
   } catch {
     return emptyData();
