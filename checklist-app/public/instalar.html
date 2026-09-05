@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1b3a2f" />
     <meta name="description" content="Instale o Task-Flux no celular em poucos toques." />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Task-Flux" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -22,12 +23,12 @@
         --ink-soft: rgba(20, 36, 29, 0.72);
         --moss: #1b3a2f;
         --moss-mid: #2f5a48;
-        --leaf: #4f8b6e;
         --amber: #e0a41a;
         --on-strong: #f4faf6;
         --line: rgba(20, 36, 29, 0.12);
-        --font-display: 'Syne', sans-serif;
-        --font-body: 'Figtree', sans-serif;
+        --danger: #b33a2d;
+        --font-display: 'Syne', 'Avenir Next', 'Segoe UI', sans-serif;
+        --font-body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
       }
 
       * {
@@ -59,7 +60,6 @@
 
       .stage {
         width: min(100%, 28rem);
-        position: relative;
       }
 
       .brand {
@@ -67,8 +67,7 @@
         align-items: center;
         gap: 0.85rem;
         margin-bottom: 1.75rem;
-        opacity: 0;
-        animation: rise 0.7s ease forwards;
+        animation: rise 0.7s ease both;
       }
 
       .mark {
@@ -103,8 +102,7 @@
         letter-spacing: -0.03em;
         line-height: 1.15;
         margin: 0 0 0.65rem;
-        opacity: 0;
-        animation: rise 0.7s ease 0.08s forwards;
+        animation: rise 0.7s ease 0.08s both;
       }
 
       .lede {
@@ -113,8 +111,7 @@
         font-size: 1.05rem;
         line-height: 1.45;
         max-width: 22rem;
-        opacity: 0;
-        animation: rise 0.7s ease 0.14s forwards;
+        animation: rise 0.7s ease 0.14s both;
       }
 
       .phone {
@@ -130,8 +127,7 @@
           0 28px 60px rgba(20, 36, 29, 0.22),
           inset 0 0 0 1px rgba(255, 255, 255, 0.18);
         overflow: hidden;
-        opacity: 0;
-        animation: rise 0.85s ease 0.18s forwards, float 5.5s ease-in-out 1s infinite;
+        animation: rise 0.85s ease 0.18s both, float 5.5s ease-in-out 1s infinite;
       }
 
       .phone::before {
@@ -183,8 +179,7 @@
       .actions {
         display: grid;
         gap: 0.75rem;
-        opacity: 0;
-        animation: rise 0.7s ease 0.28s forwards;
+        animation: rise 0.7s ease 0.28s both;
       }
 
       .btn {
@@ -202,7 +197,7 @@
         font-family: var(--font-body);
         font-weight: 700;
         font-size: 1rem;
-        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+        transition: transform 0.18s ease, background 0.18s ease;
       }
 
       .btn:active {
@@ -231,8 +226,7 @@
         color: var(--ink-soft);
         font-size: 0.92rem;
         line-height: 1.45;
-        opacity: 0;
-        animation: rise 0.7s ease 0.36s forwards;
+        animation: rise 0.7s ease 0.36s both;
       }
 
       .hint ol {
@@ -244,14 +238,30 @@
         margin-top: 0.3rem;
       }
 
+      .status {
+        margin-top: 0.85rem;
+        font-size: 0.88rem;
+        color: var(--ink-soft);
+        min-height: 1.2em;
+      }
+
+      .status.error {
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      .status.ok {
+        color: var(--moss);
+        font-weight: 600;
+      }
+
       .alt {
         margin-top: 1.5rem;
         padding-top: 1.15rem;
         border-top: 1px solid var(--line);
         font-size: 0.9rem;
         color: var(--ink-soft);
-        opacity: 0;
-        animation: rise 0.7s ease 0.42s forwards;
+        animation: rise 0.7s ease 0.42s both;
       }
 
       .alt a {
@@ -289,7 +299,6 @@
         .hint,
         .alt {
           animation: none;
-          opacity: 1;
         }
       }
     </style>
@@ -324,14 +333,29 @@
           </div>
         </div>
 
-        <div class="actions" id="actions"></div>
-        <div class="hint" id="hint"></div>
-        <p class="alt" id="alt"></p>
+        <!-- Fallback visível mesmo se o JS falhar -->
+        <div class="actions" id="actions">
+          <a class="btn btn-primary" id="apkBtn" href="/downloads/task-flux-1.0.0.apk"
+            >Baixar APK Android</a
+          >
+          <a class="btn btn-secondary" href="./">Abrir app (web / iPhone)</a>
+        </div>
+        <div class="hint" id="hint">
+          <p><strong>Android:</strong> toque em Baixar APK → permita fontes desconhecidas → Instalar.</p>
+          <p><strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.</p>
+        </div>
+        <p class="status" id="status" aria-live="polite"></p>
+        <p class="alt" id="alt">
+          Desenvolvedor iOS:
+          <a href="/downloads/task-flux-ios-xcode-1.0.0.zip">projeto Xcode (.zip)</a>
+        </p>
       </div>
     </main>
 
     <script>
       (function () {
+        var APK = '/downloads/task-flux-1.0.0.apk';
+        var IOS_ZIP = '/downloads/task-flux-ios-xcode-1.0.0.zip';
         var ua = navigator.userAgent || '';
         var isIOS =
           /iPhone|iPad|iPod/i.test(ua) ||
@@ -343,10 +367,7 @@
         var alt = document.getElementById('alt');
         var headline = document.getElementById('headline');
         var lede = document.getElementById('lede');
-
-        var apk = '/downloads/task-flux-1.0.0.apk';
-        var appHome = './';
-        var iosZip = '/downloads/task-flux-ios-xcode-1.0.0.zip';
+        var statusEl = document.getElementById('status');
 
         function btn(href, label, primary, attrs) {
           var a = document.createElement('a');
@@ -361,43 +382,68 @@
           return a;
         }
 
+        function clear(el) {
+          while (el.firstChild) el.removeChild(el.firstChild);
+        }
+
+        clear(actions);
+
         if (isAndroid) {
           headline.textContent = 'Instalar no Android';
-          lede.textContent = 'Baixe o APK e permita a instalação deste app.';
-          actions.appendChild(btn(apk, 'Baixar e instalar APK', true, { download: 'task-flux-1.0.0.apk' }));
-          actions.appendChild(btn(appHome, 'Abrir no navegador', false));
+          lede.textContent = 'Toque no botão abaixo. O Chrome deve oferecer abrir/instalar o APK.';
+          // Sem atributo download: no Android isso abre o instalador com mais frequência.
+          var installBtn = btn(APK, 'Instalar APK agora', true);
+          installBtn.addEventListener('click', function () {
+            statusEl.className = 'status ok';
+            statusEl.textContent = 'Abrindo o APK… Se só baixar, abra em Downloads e toque em Instalar.';
+          });
+          actions.appendChild(installBtn);
+          actions.appendChild(btn('./', 'Abrir no navegador', false));
           hint.innerHTML =
             '<ol>' +
-            '<li>Toque em <strong>Baixar e instalar APK</strong>.</li>' +
-            '<li>Se pedir, permita instalar de fontes desconhecidas.</li>' +
-            '<li>Abra o arquivo baixado e confirme.</li>' +
+            '<li>Toque em <strong>Instalar APK agora</strong>.</li>' +
+            '<li>Se o Chrome pedir, permita <strong>fontes desconhecidas</strong> / instalar apps deste navegador.</li>' +
+            '<li>Confirme <strong>Instalar</strong>. Pacote: <code>com.taskflux.app</code>.</li>' +
             '</ol>';
-          alt.innerHTML = 'Também no iPhone? Abra esta página no Safari.';
+          alt.textContent = 'Também no iPhone? Abra esta página no Safari.';
         } else if (isIOS) {
           headline.textContent = 'Instalar no iPhone';
-          lede.textContent = 'No Safari, adicione o Task-Flux à Tela de Início.';
-          actions.appendChild(btn(appHome, 'Abrir o app', true));
+          lede.textContent = 'Use o Safari para adicionar o Task-Flux à Tela de Início.';
+          actions.appendChild(btn('./', 'Abrir o app', true));
           hint.innerHTML =
             '<ol>' +
-            '<li>Toque em <strong>Abrir o app</strong> (use o Safari).</li>' +
+            '<li>Toque em <strong>Abrir o app</strong> (precisa ser Safari).</li>' +
             '<li>Toque em <strong>Compartilhar</strong>.</li>' +
             '<li>Escolha <strong>Adicionar à Tela de Início</strong>.</li>' +
             '</ol>';
           alt.innerHTML =
-            'Tem Mac e quer o app nativo? <a href="' + iosZip + '">Baixar projeto Xcode</a>.';
+            'Tem Mac e quer o app nativo? <a href="' + IOS_ZIP + '">Baixar projeto Xcode</a>.';
         } else {
           headline.textContent = 'Instalador Task-Flux';
-          lede.textContent = 'Escolha o aparelho. No celular, esta página já mostra o caminho certo.';
-          actions.appendChild(btn(apk, 'Baixar APK Android', true, { download: 'task-flux-1.0.0.apk' }));
-          actions.appendChild(btn(appHome, 'Abrir app (web / iPhone)', false));
+          lede.textContent = 'No celular esta página mostra o caminho certo. No computador, baixe o APK:';
+          actions.appendChild(btn(APK, 'Baixar APK Android', true));
+          actions.appendChild(btn('./', 'Abrir app (web / iPhone)', false));
           hint.innerHTML =
-            '<p><strong>Android:</strong> baixe o APK e permita fontes desconhecidas.</p>' +
-            '<p><strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.</p>';
+            '<p><strong>Android:</strong> abra este link no celular → Instalar APK → permita fontes desconhecidas.</p>' +
+            '<p><strong>iPhone:</strong> Safari → Compartilhar → Adicionar à Tela de Início.</p>';
           alt.innerHTML =
-            'Desenvolvedor iOS: <a href="' +
-            iosZip +
-            '">projeto Xcode (.zip)</a>';
+            'Desenvolvedor iOS: <a href="' + IOS_ZIP + '">projeto Xcode (.zip)</a>';
         }
+
+        // Verifica se o APK está acessível
+        fetch(APK, { method: 'HEAD', cache: 'no-store' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            if (!isAndroid) {
+              statusEl.className = 'status ok';
+              statusEl.textContent = 'APK disponível (' + (res.headers.get('content-length') || '?') + ' bytes).';
+            }
+          })
+          .catch(function () {
+            statusEl.className = 'status error';
+            statusEl.textContent =
+              'Não foi possível alcançar o APK neste servidor. Tente de novo ou peça um link atualizado.';
+          });
       })();
     </script>
   </body>

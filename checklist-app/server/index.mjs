@@ -233,7 +233,12 @@ app.get('/downloads/:file', (req, res, next) => {
   const full = join(downloadsDir, file)
   if (!existsSync(full)) return res.status(404).send('Not found')
   if (file.endsWith('.apk')) {
-    res.type('application/vnd.android.package-archive')
+    // inline + package MIME: no Android Chrome costuma oferecer Abrir/Instalar
+    // em vez de só salvar o arquivo sem feedback.
+    res.setHeader('Content-Type', 'application/vnd.android.package-archive')
+    res.setHeader('Content-Disposition', `inline; filename="${file}"`)
+    res.setHeader('Cache-Control', 'no-store')
+    return res.sendFile(full, (err) => (err ? next(err) : undefined))
   }
   return res.download(full, file, (err) => (err ? next(err) : undefined))
 })
