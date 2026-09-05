@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ContactPicker } from '../components/ContactPicker';
 import { ObservationsField } from '../components/ObservationsField';
 import { PhotoCapture } from '../components/PhotoCapture';
-import { createItems, sendReportEmail } from '../email';
+import { createItems, prefetchEmailConfigured, sendReportEmail } from '../email';
 import { loadData, saveReport, uid } from '../storage';
 import type { ChecklistItem, ChecklistReport } from '../types';
 
@@ -22,6 +22,11 @@ export function NewChecklistPage() {
   const [customEmail, setCustomEmail] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+
+  // Descobre cedo se há Resend — assim o Finalizar não faz POST antes do Compartilhar no iPhone.
+  useEffect(() => {
+    void prefetchEmailConfigured();
+  }, []);
 
   function toggleItem(id: string) {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
@@ -88,7 +93,11 @@ export function NewChecklistPage() {
     };
 
     setSending(true);
-    setFeedback('Salvando e enviando o checklist por e-mail…');
+    setFeedback(
+      photoDataUrls.length
+        ? 'Salvando e abrindo o compartilhamento com as fotos…'
+        : 'Salvando e enviando o checklist por e-mail…',
+    );
     try {
       const result = await sendReportEmail(report);
       saveReport(report);
@@ -101,22 +110,26 @@ export function NewChecklistPage() {
       } else if (result.via === 'share') {
         setFeedback(
           photoDataUrls.length
-            ? 'Checklist salvo. No menu Compartilhar, escolha Mail — as fotos vão como anexo. Não use só o app de e-mail sem anexos.'
+            ? 'Checklist salvo. Se o Mail abriu pelo Compartilhar, confira os anexos das fotos antes de enviar.'
             : 'Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.',
+        );
+      } else if (result.via === 'cancelled') {
+        setFeedback(
+          'Checklist salvo neste aparelho. O compartilhamento foi fechado — toque em Finalizar de novo e escolha Mail para anexar as fotos.',
         );
       } else {
         setFeedback(
           photoDataUrls.length
-            ? 'Checklist salvo. O app de e-mail foi aberto, mas mailto não anexa fotos — use compartilhar ou configure RESEND_API_KEY.'
+            ? 'Checklist salvo. O app de e-mail foi aberto, mas mailto não anexa fotos — use Compartilhar ou configure RESEND_API_KEY.'
             : 'Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.',
         );
       }
       setSending(false);
-      setTimeout(() => navigate(`/historico/${report.id}`), 900);
+      setTimeout(() => navigate(`/historico/${report.id}`), result.via === 'cancelled' ? 1600 : 900);
     } catch (error) {
       saveReport(report);
       const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';
-      setFeedback(`Checklist salvo neste aparelho, mas o envio falhou: ${message}`);
+      setFeedback(`Checklist salvo neste aparelho. ${message}`);
       setSending(false);
     }
   }
