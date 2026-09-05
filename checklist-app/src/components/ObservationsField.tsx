@@ -34,7 +34,7 @@ export function ObservationsField({ value, onChange }: Props) {
             aria-pressed={listening}
           >
             <span className="mic" aria-hidden />
-            {listening ? 'Ouvindo… toque para parar' : 'Falar para escrever'}
+            {listening ? 'Ouvindo… clique para parar' : 'Clique para transcrever'}
           </button>
         ) : (
           <p className="hint">Seu navegador não oferece ditado por voz. Digite as observações normalmente.</p>
