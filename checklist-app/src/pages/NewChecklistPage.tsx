@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ContactPicker } from '../components/ContactPicker';
 import { ObservationsField } from '../components/ObservationsField';
 import { PhotoCapture } from '../components/PhotoCapture';
-import { buildEmailBody, createItems, shareReport } from '../email';
+import { createItems, sendReportEmail } from '../email';
 import { loadData, saveReport, uid } from '../storage';
 import type { ChecklistItem, ChecklistReport } from '../types';
 
@@ -21,6 +21,7 @@ export function NewChecklistPage() {
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [customEmail, setCustomEmail] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   function toggleItem(id: string) {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
@@ -63,7 +64,7 @@ export function NewChecklistPage() {
     return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))));
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     const emails = collectEmails();
     if (!title.trim()) {
       setFeedback('Informe um título para o checklist.');
@@ -73,6 +74,7 @@ export function NewChecklistPage() {
       setFeedback('Selecione um contato, um grupo ou digite um e-mail para enviar.');
       return;
     }
+    if (sending) return;
 
     const report: ChecklistReport = {
       id: uid(),
@@ -85,24 +87,26 @@ export function NewChecklistPage() {
       sentTo: emails,
     };
 
-    saveReport(report);
-    setFeedback('Checklist salvo. Preparando envio…');
-    void shareReport({
-      emails,
-      subject: `Checklist: ${report.title}`,
-      body: buildEmailBody(report),
-      photoDataUrl: report.photoDataUrl,
-    }).then((mode) => {
-      setFeedback(mode === 'shared' ? 'Checklist enviado.' : 'Checklist salvo. Abrindo o e-mail…');
-      setTimeout(() => navigate(`/historico/${report.id}`), 500);
-    });
+    setSending(true);
+    setFeedback('Salvando e enviando o checklist por e-mail…');
+    try {
+      await sendReportEmail(report);
+      saveReport(report);
+      setFeedback('Checklist enviado por e-mail.');
+      setTimeout(() => navigate(`/historico/${report.id}`), 600);
+    } catch (error) {
+      saveReport(report);
+      const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';
+      setFeedback(`Checklist salvo neste aparelho, mas o envio falhou: ${message}`);
+      setSending(false);
+    }
   }
 
   return (
     <div className="page form-page">
       <header className="page-intro">
         <h1>Novo checklist</h1>
-        <p>Inclua os itens, tire fotos, descreva e envie por e-mail.</p>
+        <p>Inclua os itens, tire fotos, descreva e envie direto — sem abrir sua caixa de e-mail.</p>
       </header>
 
       <section className="form-block">
@@ -182,8 +186,8 @@ export function NewChecklistPage() {
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="sticky-actions">
-        <button type="button" className="btn primary wide" onClick={handleFinish}>
-          Finalizar e enviar e-mail
+        <button type="button" className="btn primary wide" onClick={() => void handleFinish()} disabled={sending}>
+          {sending ? 'Enviando…' : 'Finalizar e enviar e-mail'}
         </button>
       </div>
     </div>

@@ -1,66 +1,74 @@
-import type { ChecklistItem, ChecklistReport } from './types';
+import type { ChecklistItem, ChecklistReport } from './types'
+
+const API_BASE = (import.meta.env.VITE_EMAIL_API_URL as string | undefined)?.replace(/\/$/, '') || ''
+const APP_TOKEN = (import.meta.env.VITE_APP_SEND_TOKEN as string | undefined) || ''
 
 export function buildEmailBody(report: ChecklistReport): string {
-  const lines: string[] = [];
-  lines.push(`Checklist: ${report.title}`);
-  if (report.location) lines.push(`Veículo / placa: ${report.location}`);
-  lines.push(`Data: ${new Date(report.createdAt).toLocaleString('pt-BR')}`);
-  lines.push('');
-  lines.push('Itens verificados:');
+  const lines: string[] = []
+  lines.push(`Checklist: ${report.title}`)
+  if (report.location) lines.push(`Veículo / placa: ${report.location}`)
+  lines.push(`Data: ${new Date(report.createdAt).toLocaleString('pt-BR')}`)
+  lines.push('')
+  lines.push('Itens verificados:')
   report.items.forEach((item) => {
-    lines.push(`${item.done ? '[x]' : '[ ]'} ${item.label}`);
-  });
-  lines.push('');
-  lines.push('Observações:');
-  lines.push(report.observations.trim() || '(sem observações)');
+    lines.push(`${item.done ? '[x]' : '[ ]'} ${item.label}`)
+  })
+  lines.push('')
+  lines.push('Observações:')
+  lines.push(report.observations.trim() || '(sem observações)')
   if (report.photoDataUrl) {
-    lines.push('');
-    lines.push('Foto: anexada no aplicativo. Abra o relatório salvo no Task-Flux para visualizar.');
+    lines.push('')
+    lines.push('Foto: anexada no e-mail.')
   }
-  lines.push('');
-  lines.push('— Enviado pelo Task-Flux');
-  return lines.join('\n');
+  lines.push('')
+  lines.push('— Enviado pelo Task-Flux')
+  return lines.join('\n')
 }
 
-export function openMailto(emails: string[], subject: string, body: string): void {
-  const url = `mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = url;
+export type SendEmailResult = {
+  ok: true
+  id: string | null
+  sentTo: string[]
 }
 
-export async function shareReport(options: {
-  emails: string[];
-  subject: string;
-  body: string;
-  photoDataUrl: string | null;
-}): Promise<'shared' | 'mailto'> {
-  const { emails, subject, body, photoDataUrl } = options;
+export async function sendReportEmail(report: ChecklistReport): Promise<SendEmailResult> {
+  const url = `${API_BASE}/api/send-email`
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (APP_TOKEN) headers['X-App-Token'] = APP_TOKEN
 
-  if (navigator.share) {
-    try {
-      const data: ShareData = {
-        title: subject,
-        text: `${body}\n\nPara: ${emails.join(', ')}`,
-      };
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      to: report.sentTo,
+      subject: `Checklist: ${report.title}`,
+      title: report.title,
+      location: report.location,
+      items: report.items.map((item) => ({ label: item.label, done: item.done })),
+      observations: report.observations,
+      createdAt: report.createdAt,
+      photoDataUrl: report.photoDataUrl,
+    }),
+  })
 
-      if (photoDataUrl && navigator.canShare) {
-        const blob = await (await fetch(photoDataUrl)).blob();
-        const file = new File([blob], 'checklist-foto.jpg', { type: blob.type || 'image/jpeg' });
-        const withFile = { ...data, files: [file] };
-        if (navigator.canShare(withFile)) {
-          await navigator.share(withFile);
-          return 'shared';
-        }
-      }
-
-      await navigator.share(data);
-      return 'shared';
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') return 'shared';
-    }
+  let payload: { error?: string; id?: string | null; sentTo?: string[]; ok?: boolean } = {}
+  try {
+    payload = (await response.json()) as typeof payload
+  } catch {
+    payload = {}
   }
 
-  openMailto(emails, subject, body);
-  return 'mailto';
+  if (!response.ok) {
+    throw new Error(payload.error || `Falha ao enviar e-mail (${response.status}).`)
+  }
+
+  return {
+    ok: true,
+    id: payload.id ?? null,
+    sentTo: payload.sentTo ?? report.sentTo,
+  }
 }
 
 export function createItems(labels: string[]): ChecklistItem[] {
@@ -68,5 +76,5 @@ export function createItems(labels: string[]): ChecklistItem[] {
     id: `item-${i}-${label.slice(0, 12)}`,
     label,
     done: false,
-  }));
+  }))
 }

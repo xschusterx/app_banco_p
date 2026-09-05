@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "server": "node server/index.mjs",
+    "start": "npm run build && npm run server",
     "build:web": "tsc -b && vite build",
     "build:android": "npm run build && npx cap sync android",
     "bundle:android": "npm run build:android && cd android && ./gradlew bundleRelease"
@@ -16,9 +18,13 @@
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "resend": "^6.26.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

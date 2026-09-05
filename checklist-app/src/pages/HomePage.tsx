@@ -13,7 +13,7 @@ export function HomePage() {
           <p className="hero-brand">Task-Flux</p>
           <h1>Checklist</h1>
           <p className="hero-lead">
-            Faça relatórios simples e fáceis e encaminhe direto no seu e-mail.
+            Faça relatórios simples e envie por e-mail sem abrir sua caixa de entrada.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" to="/novo">
@@ -42,7 +42,7 @@ export function HomePage() {
           </li>
           <li>
             <strong>Envie por e-mail</strong>
-            <span>Após finalizar o checklist, encaminhe por e-mail.</span>
+            <span>Ao finalizar, o app dispara o relatório para os destinatários escolhidos.</span>
           </li>
         </ol>
       </section>

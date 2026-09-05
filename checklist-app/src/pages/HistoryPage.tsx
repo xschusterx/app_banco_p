@@ -1,9 +1,10 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { buildEmailBody, openMailto } from '../email';
-import { deleteReport, loadData } from '../storage';
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { sendReportEmail } from '../email'
+import { deleteReport, loadData } from '../storage'
 
 export function HistoryPage() {
-  const reports = loadData().reports;
+  const reports = loadData().reports
 
   return (
     <div className="page">
@@ -30,13 +31,15 @@ export function HistoryPage() {
         </ul>
       )}
     </div>
-  );
+  )
 }
 
 export function ReportDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const report = loadData().reports.find((r) => r.id === id);
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const report = loadData().reports.find((r) => r.id === id)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
 
   if (!report) {
     return (
@@ -46,7 +49,22 @@ export function ReportDetailPage() {
           Voltar ao histórico
         </Link>
       </div>
-    );
+    )
+  }
+
+  async function handleResend() {
+    if (!report || sending) return
+    setSending(true)
+    setFeedback('Reenviando e-mail…')
+    try {
+      await sendReportEmail(report)
+      setFeedback('E-mail reenviado.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha ao reenviar.'
+      setFeedback(message)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -95,20 +113,18 @@ export function ReportDetailPage() {
         <p className="obs-text">{report.sentTo.join(', ')}</p>
       </section>
 
+      {feedback ? <p className="feedback">{feedback}</p> : null}
+
       <div className="row-actions wrap">
-        <button
-          type="button"
-          className="btn primary"
-          onClick={() => openMailto(report.sentTo, `Checklist: ${report.title}`, buildEmailBody(report))}
-        >
-          Reenviar e-mail
+        <button type="button" className="btn primary" onClick={() => void handleResend()} disabled={sending}>
+          {sending ? 'Enviando…' : 'Reenviar e-mail'}
         </button>
         <button
           type="button"
           className="btn ghost danger"
           onClick={() => {
-            deleteReport(report.id);
-            navigate('/historico');
+            deleteReport(report.id)
+            navigate('/historico')
           }}
         >
           Excluir
@@ -118,5 +134,5 @@ export function ReportDetailPage() {
         </Link>
       </div>
     </div>
-  );
+  )
 }
