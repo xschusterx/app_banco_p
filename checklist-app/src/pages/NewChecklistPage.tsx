@@ -18,6 +18,7 @@ export function NewChecklistPage() {
   const [observations, setObservations] = useState('');
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [customEmail, setCustomEmail] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -43,12 +44,21 @@ export function NewChecklistPage() {
     );
   }
 
+  function toggleContact(id: string) {
+    setSelectedContactIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  }
+
   function collectEmails(): string[] {
     const fromGroups = initial.groups
       .filter((g) => selectedGroupIds.includes(g.id))
       .flatMap((g) => g.emails);
+    const fromContacts = initial.contacts
+      .filter((c) => selectedContactIds.includes(c.id))
+      .map((c) => c.email);
     const extra = customEmail.trim();
-    const all = [...fromGroups];
+    const all = [...fromGroups, ...fromContacts];
     if (extra) all.push(extra);
     return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))));
   }
@@ -60,7 +70,7 @@ export function NewChecklistPage() {
       return;
     }
     if (!emails.length) {
-      setFeedback('Selecione um grupo ou digite um e-mail para enviar.');
+      setFeedback('Selecione um contato, um grupo ou digite um e-mail para enviar.');
       return;
     }
 
@@ -159,8 +169,11 @@ export function NewChecklistPage() {
       <ObservationsField value={observations} onChange={setObservations} />
 
       <ContactPicker
+        contacts={initial.contacts}
         groups={initial.groups}
+        selectedContactIds={selectedContactIds}
         selectedGroupIds={selectedGroupIds}
+        onToggleContact={toggleContact}
         onToggleGroup={toggleGroup}
         customEmail={customEmail}
         onCustomEmailChange={setCustomEmail}
