@@ -1,9 +1,12 @@
 # Relato Campo
 
-Aplicativo web de checklist de veículos (pasta `checklist-app`) com itens base (farol, pneus, para-brisa, lataria), foto, observações por texto ou voz, envio por e-mail e contatos salvos.
+App de checklist de veículos em `checklist-app` (web + Android App Bundle).
 
 ```bash
 cd checklist-app
 npm install
-npm run dev
+npm run dev          # web
+npm run bundle:android  # gera .aab para Play Store
 ```
+
+Veja `checklist-app/PLAY_STORE.md` para publicar na Play Store.
