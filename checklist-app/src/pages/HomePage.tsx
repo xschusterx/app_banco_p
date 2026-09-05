@@ -34,15 +34,15 @@ export function HomePage() {
         <ol className="steps">
           <li>
             <strong>Marque os itens</strong>
-            <span>Use a base (farol, pneus, para-brisa, lataria) e inclua o que mais for conferir.</span>
+            <span>Inclua o que deseja relatar como conferido (óleo, pneus…).</span>
           </li>
           <li>
             <strong>Foto e relato</strong>
-            <span>Capture a imagem do veículo e digite ou fale as observações.</span>
+            <span>Faça a captura de fotos e descreva.</span>
           </li>
           <li>
             <strong>Envie por e-mail</strong>
-            <span>Use contatos salvos para reenviar em próximos checklists da frota.</span>
+            <span>Após finalizar o checklist, encaminhe por e-mail.</span>
           </li>
         </ol>
       </section>
