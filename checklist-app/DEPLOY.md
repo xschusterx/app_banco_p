@@ -51,13 +51,36 @@ Health: `GET https://seu-host/api/health` → `"emailConfigured": true`.
 
 Instalador: `https://seu-host/instalar.html` · APK: `https://seu-host/install.apk`
 
-## Opção B — Railway
+## Opção B — Railway (recomendado: host HTTPS fixo)
 
-1. New Project → Deploy from GitHub → pasta `checklist-app` (ou root com Dockerfile em `checklist-app/Dockerfile`).
-2. Se o root for o monorepo, defina **Root Directory** = `checklist-app`.
-3. Variáveis: `RESEND_API_KEY`, `RESEND_FROM`, `APP_SEND_TOKEN`, `CORS_ORIGIN`, `NODE_ENV=production`.
-4. Build: Dockerfile (detectado) **ou** `npm ci && npm run build` + Start `node server/index.mjs`.
-5. Gere domínio Railway (`*.up.railway.app`) ou ligue o seu domínio customizado.
+Arquivos prontos nesta pasta: `railway.toml` + `Dockerfile`.
+
+### CLI (rápido)
+
+```bash
+cd checklist-app
+railway login          # ou: railway login --browserless
+railway init           # cria projeto Task-Flux
+railway up             # sobe o container
+railway domain         # gera https://….up.railway.app (URL fixa)
+```
+
+Variáveis (dashboard ou `railway variables set`):
+
+```bash
+railway variables set NODE_ENV=production
+railway variables set RESEND_API_KEY=re_…
+railway variables set RESEND_FROM='Task-Flux <onboarding@resend.dev>'
+railway variables set APP_SEND_TOKEN='segredo-longo'
+# Depois de ter a URL pública:
+railway variables set CORS_ORIGIN=https://seu-app.up.railway.app
+```
+
+### Dashboard GitHub
+
+1. New Project → Deploy from GitHub → **Root Directory** = `checklist-app`.
+2. Mesmas variáveis acima; health check `/api/health`.
+3. Gere domínio Railway (`*.up.railway.app`) ou ligue o seu domínio.
 
 Para o APK Android apontar para a API Railway, rebuild com:
 
@@ -66,6 +89,8 @@ export VITE_EMAIL_API_URL=https://seu-app.up.railway.app
 export VITE_APP_SEND_TOKEN=mesmo-segredo
 npm run apk:android
 ```
+
+> Em produção no mesmo host web, deixe `VITE_EMAIL_API_URL` vazio no build Docker (mesma origem `/api`).
 
 ## Opção C — Render
 

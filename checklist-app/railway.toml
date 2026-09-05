@@ -1,0 +1,16 @@
+# Task-Flux — deploy estável no Railway (*.up.railway.app)
+# Root Directory no projeto Railway deve ser `checklist-app`
+# ou rode a CLI a partir desta pasta: `cd checklist-app && railway up`
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+[service]
+# Railway injeta PORT; o servidor já usa process.env.PORT
