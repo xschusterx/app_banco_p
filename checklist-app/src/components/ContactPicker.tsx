@@ -24,8 +24,11 @@ export function ContactPicker({
   return (
     <section className="send-block">
       <div className="section-head">
-        <h2>Enviar por e-mail</h2>
-        <p>Escolha contatos, grupos salvos ou digite um e-mail avulso para este envio.</p>
+        <h2>Destinatários</h2>
+        <p>
+          Escolha contatos ou grupos cadastrados (ou um e-mail avulso de destino). O envio sai pelo
+          Task-Flux — você não precisa abrir sua caixa de e-mail.
+        </p>
       </div>
 
       {groups.length > 0 ? (

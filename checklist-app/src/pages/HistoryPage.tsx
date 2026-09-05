@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { sendReportEmail } from '../email'
+import { normalizePhotoUrls } from '../photos'
 import { deleteReport, loadData } from '../storage'
 
 export function HistoryPage() {
@@ -17,17 +18,21 @@ export function HistoryPage() {
         <p className="hint">Nenhum checklist finalizado ainda.</p>
       ) : (
         <ul className="report-list tall">
-          {reports.map((report) => (
-            <li key={report.id}>
-              <Link to={`/historico/${report.id}`}>
-                <strong>{report.title}</strong>
-                <span>
-                  {new Date(report.createdAt).toLocaleString('pt-BR')}
-                  {report.location ? ` · ${report.location}` : ''}
-                </span>
-              </Link>
-            </li>
-          ))}
+          {reports.map((report) => {
+            const photos = normalizePhotoUrls(report)
+            return (
+              <li key={report.id}>
+                <Link to={`/historico/${report.id}`}>
+                  <strong>{report.title}</strong>
+                  <span>
+                    {new Date(report.createdAt).toLocaleString('pt-BR')}
+                    {report.location ? ` · ${report.location}` : ''}
+                    {photos.length ? ` · ${photos.length} foto(s)` : ''}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>
@@ -52,13 +57,19 @@ export function ReportDetailPage() {
     )
   }
 
+  const photos = normalizePhotoUrls(report)
+
   async function handleResend() {
     if (!report || sending) return
     setSending(true)
     setFeedback('Reenviando e-mail…')
     try {
       await sendReportEmail(report)
-      setFeedback('E-mail reenviado.')
+      setFeedback(
+        photos.length
+          ? `E-mail reenviado com ${photos.length} foto(s) no corpo/anexo.`
+          : 'E-mail reenviado pelo servidor.',
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao reenviar.'
       setFeedback(message)
@@ -75,10 +86,14 @@ export function ReportDetailPage() {
         {report.location ? <p className="hero-lead soft">{report.location}</p> : null}
       </header>
 
-      {report.photoDataUrl ? (
-        <div className="photo-preview detail">
-          <img src={report.photoDataUrl} alt={`Foto do checklist ${report.title}`} />
-        </div>
+      {photos.length ? (
+        <ul className="photo-grid detail">
+          {photos.map((url, index) => (
+            <li key={`detail-photo-${index}`} className="photo-grid-item">
+              <img src={url} alt={`Foto ${index + 1} do checklist ${report.title}`} />
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       <section className="form-block">

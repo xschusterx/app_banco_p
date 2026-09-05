@@ -13,7 +13,7 @@ export function HomePage() {
           <p className="hero-brand">Task-Flux</p>
           <h1>Checklist</h1>
           <p className="hero-lead">
-            Faça relatórios simples e envie por e-mail sem abrir sua caixa de entrada.
+            Faça relatórios simples e envie por e-mail — direto pela API ou pelo aparelho.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" to="/novo">

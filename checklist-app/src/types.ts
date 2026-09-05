@@ -23,7 +23,10 @@ export type ChecklistReport = {
   location: string;
   items: ChecklistItem[];
   observations: string;
-  photoDataUrl: string | null;
+  /** Fotos comprimidas em data URL (JPEG). Relatórios antigos podem ter só photoDataUrl. */
+  photoDataUrls: string[];
+  /** @deprecated use photoDataUrls — mantido só para migração de histórico antigo */
+  photoDataUrl?: string | null;
   createdAt: string;
   sentTo: string[];
 };

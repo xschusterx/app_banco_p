@@ -786,6 +786,54 @@ textarea {
   margin-bottom: 1rem;
 }
 
+.photo-grid {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.photo-grid.detail {
+  margin-bottom: 1rem;
+}
+
+.photo-grid-item {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(27, 58, 47, 0.06);
+  aspect-ratio: 1 / 1;
+}
+
+.photo-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-remove {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 28, 24, 0.72);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn.wide,
+.btn.ghost.wide {
+  width: 100%;
+}
+
 .photo-actions {
   display: flex;
   gap: 0.55rem;
@@ -873,6 +921,33 @@ textarea {
   background: rgba(79, 139, 110, 0.12);
   color: var(--moss);
   font-weight: 600;
+}
+
+.banner {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.banner.ok {
+  background: rgba(79, 139, 110, 0.14);
+  color: var(--moss);
+  border: 1px solid rgba(79, 139, 110, 0.28);
+}
+
+.banner.warn {
+  background: rgba(180, 120, 40, 0.12);
+  color: #8a5a12;
+  border: 1px solid rgba(180, 120, 40, 0.28);
+}
+
+.banner code {
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .error {

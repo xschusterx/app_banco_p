@@ -52,5 +52,6 @@ No Android, aponte `VITE_EMAIL_API_URL` para a URL pública HTTPS da API antes d
 
 - Contatos e histórico ficam salvos no aparelho (`localStorage` / WebView).
 - A chave Resend fica **somente no servidor** — nunca no app.
+- Sem `RESEND_API_KEY`, o envio usa compartilhamento/`mailto` do aparelho.
 - Em produção, use domínio próprio verificado no Resend para evitar spam.
 - O ditado por voz usa a Web Speech API (melhor no Chrome).

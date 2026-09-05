@@ -1,3 +1,4 @@
+import { normalizePhotoUrls } from './photos';
 import type { AppData, ChecklistReport, Contact, ContactGroup } from './types';
 
 const STORAGE_KEY = 'task-flux-data-v2';
@@ -11,6 +12,15 @@ function emptyData(): AppData {
     groups: [],
     reports: [],
     defaultItems: DEFAULT_ITEMS,
+  };
+}
+
+function migrateReport(report: ChecklistReport): ChecklistReport {
+  const photoDataUrls = normalizePhotoUrls(report);
+  return {
+    ...report,
+    photoDataUrls,
+    photoDataUrl: undefined,
   };
 }
 
@@ -30,7 +40,7 @@ export function loadData(): AppData {
     return {
       contacts: parsed.contacts ?? [],
       groups: parsed.groups ?? [],
-      reports: parsed.reports ?? [],
+      reports: (parsed.reports ?? []).map((report) => migrateReport(report as ChecklistReport)),
       defaultItems: DEFAULT_ITEMS,
     };
   } catch {
@@ -87,7 +97,8 @@ export function deleteGroup(id: string): AppData {
 
 export function saveReport(report: ChecklistReport): AppData {
   const data = loadData();
-  data.reports = [report, ...data.reports.filter((r) => r.id !== report.id)].slice(0, 40);
+  const normalized = migrateReport(report);
+  data.reports = [normalized, ...data.reports.filter((r) => r.id !== normalized.id)].slice(0, 40);
   saveData(data);
   return data;
 }
