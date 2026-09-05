@@ -34,7 +34,17 @@ function loadEnvFile(filePath) {
 loadEnvFile(join(rootDir, '.env'))
 
 const PORT = Number(process.env.PORT || 8787)
-const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const PLACEHOLDER_KEYS = new Set(['', 're_xxxxxxxx', 'your_api_key', 'changeme'])
+
+function resolveResendApiKey() {
+  const raw = String(process.env.RESEND_API_KEY || '').trim()
+  if (!raw || PLACEHOLDER_KEYS.has(raw.toLowerCase())) return ''
+  // Chave real da Resend começa com re_
+  if (!raw.startsWith('re_') || raw.length < 20) return ''
+  return raw
+}
+
+const RESEND_API_KEY = resolveResendApiKey()
 const RESEND_FROM = process.env.RESEND_FROM || 'Task-Flux <onboarding@resend.dev>'
 const APP_SEND_TOKEN = process.env.APP_SEND_TOKEN || ''
 const MAX_RECIPIENTS = 10

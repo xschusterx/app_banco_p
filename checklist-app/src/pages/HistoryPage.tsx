@@ -57,8 +57,14 @@ export function ReportDetailPage() {
     setSending(true)
     setFeedback('Reenviando e-mail…')
     try {
-      await sendReportEmail(report)
-      setFeedback('E-mail reenviado.')
+      const result = await sendReportEmail(report)
+      if (result.via === 'api') {
+        setFeedback('E-mail reenviado.')
+      } else if (result.via === 'share') {
+        setFeedback('Use o compartilhamento do aparelho para concluir o reenvio.')
+      } else {
+        setFeedback('Abrimos o app de e-mail do aparelho para você concluir o reenvio.')
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao reenviar.'
       setFeedback(message)

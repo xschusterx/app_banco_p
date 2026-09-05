@@ -1,16 +1,18 @@
 # Envio de e-mail seguro (Task-Flux)
 
-O app **não** abre o e-mail do usuário. O fluxo é:
+O fluxo preferido é:
 
 1. Preencher o checklist e escolher destinatários  
 2. Ao finalizar, o app monta o relatório (texto + HTML)  
 3. O **servidor** envia via [Resend](https://resend.com) com a chave de API **privada**
 
+Se `RESEND_API_KEY` **não** estiver configurada (ou for um placeholder inválido), o app **não falha**: ele usa o compartilhamento nativo ou abre o app de e-mail do aparelho (`mailto:`) para você concluir o envio.
+
 ## Por que backend?
 
 A chave `RESEND_API_KEY` **nunca** pode ir no app (web/Android). Quem vê o frontend pode roubar a chave e spammar. O token fica só em variável de ambiente do servidor.
 
-## Configuração rápida
+## Configuração rápida (envio direto via API)
 
 1. Crie conta em https://resend.com e gere uma API key  
 2. Em testes, use o remetente `onboarding@resend.dev` (só envia para o e-mail da sua conta Resend)  
@@ -19,13 +21,15 @@ A chave `RESEND_API_KEY` **nunca** pode ir no app (web/Android). Quem vê o fron
 ```bash
 cd checklist-app
 cp .env.example .env
-# edite RESEND_API_KEY=re_...
+# edite RESEND_API_KEY=re_... (chave real, não o placeholder)
 npm install
 npm run build
 npm run start
 ```
 
 Abra `http://localhost:8787` — o mesmo processo serve o app e `POST /api/send-email`.
+
+Confirme com `GET /api/health` → `"emailConfigured": true`.
 
 ### Desenvolvimento (Vite + API)
 
@@ -38,6 +42,10 @@ npm run dev
 ```
 
 O Vite faz proxy de `/api` para a porta `8787`.
+
+## Sem chave Resend
+
+O app continua utilizável: ao finalizar, abre compartilhamento / cliente de e-mail do aparelho. O checklist ainda é salvo no histórico local.
 
 ## Produção / loja
 
@@ -54,6 +62,7 @@ VITE_EMAIL_API_URL=https://api.seudominio.com
 ## Segurança incluída
 
 - Chave só no servidor  
+- Placeholder (`re_xxxxxxxx`) é rejeitado  
 - Rate limit (30 envios / 15 min por IP)  
 - Validação de e-mails e limite de destinatários (10)  
 - Limite de tamanho da foto  

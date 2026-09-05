@@ -90,9 +90,15 @@ export function NewChecklistPage() {
     setSending(true);
     setFeedback('Salvando e enviando o checklist por e-mail…');
     try {
-      await sendReportEmail(report);
+      const result = await sendReportEmail(report);
       saveReport(report);
-      setFeedback('Checklist enviado por e-mail.');
+      if (result.via === 'api') {
+        setFeedback('Checklist enviado por e-mail.');
+      } else if (result.via === 'share') {
+        setFeedback('Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.');
+      } else {
+        setFeedback('Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.');
+      }
       setTimeout(() => navigate(`/historico/${report.id}`), 600);
     } catch (error) {
       saveReport(report);
@@ -106,7 +112,7 @@ export function NewChecklistPage() {
     <div className="page form-page">
       <header className="page-intro">
         <h1>Novo checklist</h1>
-        <p>Inclua os itens, tire fotos, descreva e envie direto — sem abrir sua caixa de e-mail.</p>
+        <p>Inclua os itens, tire fotos, descreva e envie. Com a API configurada, o envio é direto; senão, usamos o e-mail/compartilhamento do aparelho.</p>
       </header>
 
       <section className="form-block">
