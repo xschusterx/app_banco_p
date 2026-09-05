@@ -1,6 +1,6 @@
 # Task-Flux
 
-App de checklist de veículos (web + Android) com:
+App de checklist de veículos (web + Android + iOS/Capacitor) com:
 
 - checklist em branco (adicione/remova itens)
 - captura de foto (câmera/galeria)
@@ -30,28 +30,42 @@ npm run server   # terminal 1 — API na porta 8787
 npm run dev      # terminal 2 — Vite
 ```
 
-## Android App Bundle (Play Store)
+## Instalar no celular
+
+Guia rápido: [INSTALL.md](./INSTALL.md)
+
+### Android (APK / Play Store)
 
 ```bash
 cd checklist-app
-npm install
-npm run bundle:android
+export VITE_EMAIL_API_URL=https://sua-api-publica.exemplo.com
+npm run apk:android      # sideload .apk
+# ou
+npm run bundle:android   # Play Store .aab
 ```
 
-O arquivo `.aab` fica em:
+- APK: `release/task-flux-1.0.0.apk`
+- AAB: `release/task-flux-1.0.0.aab`
 
-`android/app/build/outputs/bundle/release/app-release.aab`
+Guia Play Store: [PLAY_STORE.md](./PLAY_STORE.md)
 
-Cópia pronta: `release/task-flux-1.0.0.aab`
+### iOS (PWA agora / nativo no Mac)
 
-Guia completo: [PLAY_STORE.md](./PLAY_STORE.md)
+- **Agora no iPhone:** abra a URL no Safari → Compartilhar → Adicionar à Tela de Início
+- **App nativo:** projeto em `ios/` — precisa de Mac + Xcode para gerar `.ipa`
 
-No Android, aponte `VITE_EMAIL_API_URL` para a URL pública HTTPS da API antes do build.
+```bash
+npm run build:ios
+npm run open:ios   # só no macOS
+```
+
+Guia completo: [IOS.md](./IOS.md)
 
 ## Observações
 
 - Contatos e histórico ficam salvos no aparelho (`localStorage` / WebView).
 - A chave Resend fica **somente no servidor** — nunca no app.
-- Sem `RESEND_API_KEY`, o envio usa compartilhamento/`mailto` do aparelho.
+- Sem `RESEND_API_KEY`, o envio automático fica indisponível.
 - Em produção, use domínio próprio verificado no Resend para evitar spam.
-- O ditado por voz usa a Web Speech API (melhor no Chrome).
+- O ditado por voz usa a Web Speech API (melhor no Chrome / WebView).
+- No Capacitor (Android/iOS), aponte `VITE_EMAIL_API_URL` para a URL pública HTTPS da API antes do build.
