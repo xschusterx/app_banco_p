@@ -4,14 +4,14 @@
 
 Página visual que detecta Android/iPhone e guia a instalação:
 
-- **Agora (túnel):** https://1c45ec05d7f539.lhr.life/instalar.html
+- **Agora (túnel):** https://petroleum-met-produces-influences.trycloudflare.com/instalar.html
 - Atalhos: `/instalar` e `/downloads` → redirecionam para o instalador
 - Local: http://localhost:8787/instalar.html
 
 Arquivos:
 
-- APK: https://1c45ec05d7f539.lhr.life/downloads/task-flux-1.0.0.apk
-- Xcode zip: https://1c45ec05d7f539.lhr.life/downloads/task-flux-ios-xcode-1.0.0.zip
+- APK: https://petroleum-met-produces-influences.trycloudflare.com/downloads/task-flux-1.0.0.apk
+- Xcode zip: https://petroleum-met-produces-influences.trycloudflare.com/downloads/task-flux-ios-xcode-1.0.0.zip
 
 > O domínio do túnel muda quando reinicia. Se o link cair, use `/instalar.html` no host atual da API.
 
