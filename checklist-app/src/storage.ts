@@ -3,12 +3,7 @@ import type { AppData, ChecklistReport, Contact } from './types';
 const STORAGE_KEY = 'task-flux-data-v1';
 
 /** Modelo base de checklist de veículos; o usuário pode incluir outros itens na tela. */
-const DEFAULT_ITEMS = [
-  'Farol',
-  'Pneus',
-  'Para-brisa',
-  'Lataria',
-];
+const DEFAULT_ITEMS: string[] = [];
 
 function emptyData(): AppData {
   return {
