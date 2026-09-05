@@ -15,10 +15,10 @@ export function buildEmailBody(report: ChecklistReport): string {
   lines.push(report.observations.trim() || '(sem observações)');
   if (report.photoDataUrl) {
     lines.push('');
-    lines.push('Foto: anexada no aplicativo. Abra o relatório salvo no Relato Campo para visualizar.');
+    lines.push('Foto: anexada no aplicativo. Abra o relatório salvo no Task-Flux para visualizar.');
   }
   lines.push('');
-  lines.push('— Enviado pelo Relato Campo');
+  lines.push('— Enviado pelo Task-Flux');
   return lines.join('\n');
 }
 

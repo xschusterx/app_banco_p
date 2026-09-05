@@ -7,7 +7,7 @@ export function Layout() {
       <header className="topbar">
         <Link to="/" className="brand">
           <span className="brand-mark" aria-hidden />
-          <span className="brand-text">Relato Campo</span>
+          <span className="brand-text">Task-Flux</span>
         </Link>
         <div className="topbar-right">
           <ThemeToggle />

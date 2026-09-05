@@ -10,7 +10,7 @@ export function HomePage() {
       <section className="hero">
         <div className="hero-veil" aria-hidden />
         <div className="hero-copy">
-          <p className="hero-brand">Relato Campo</p>
+          <p className="hero-brand">Task-Flux</p>
           <h1>Checklist de veículos com foto, voz e envio por e-mail</h1>
           <p className="hero-lead">
             Confira farol, pneus, para-brisa e lataria, acrescente o que quiser, tire a foto e envie o relato.

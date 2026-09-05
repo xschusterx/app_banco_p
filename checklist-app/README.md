@@ -1,4 +1,4 @@
-# Relato Campo
+# Task-Flux
 
 App de checklist de veículos (web + Android) com:
 
@@ -29,7 +29,7 @@ O arquivo `.aab` fica em:
 
 `android/app/build/outputs/bundle/release/app-release.aab`
 
-Cópia pronta: `release/relato-campo-1.0.0.aab`
+Cópia pronta: `release/task-flux-1.0.0.aab`
 
 Guia completo: [PLAY_STORE.md](./PLAY_STORE.md)
 

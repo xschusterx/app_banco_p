@@ -1,4 +1,4 @@
-package com.relatocampo.app;
+package com.taskflux.app;
 
 import com.getcapacitor.BridgeActivity;
 

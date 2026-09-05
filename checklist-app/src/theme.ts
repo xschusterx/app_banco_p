@@ -1,6 +1,6 @@
 export type Theme = 'light' | 'dark';
 
-const THEME_KEY = 'relato-campo-theme';
+const THEME_KEY = 'task-flux-theme';
 
 export function getStoredTheme(): Theme {
   try {

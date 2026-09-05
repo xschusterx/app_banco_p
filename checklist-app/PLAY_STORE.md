@@ -1,14 +1,15 @@
-# Publicar Relato Campo na Google Play Store
+# Publicar Task-Flux na Google Play Store
 
 O app web foi empacotado com **Capacitor** e gerado como **Android App Bundle (`.aab`)**.
 
 ## Arquivo gerado
 
-- `checklist-app/release/relato-campo-1.0.0.aab`
+- `checklist-app/release/task-flux-1.0.0.aab`
 - Também em: `android/app/build/outputs/bundle/release/app-release.aab`
 
-- Pacote Android: `com.relatocampo.app`
+- Pacote Android: `com.taskflux.app`
 - Versão: `1.0.0` (`versionCode` 1)
+- Nome do app: **Task-Flux**
 
 ## Gerar o AAB de novo
 
@@ -17,10 +18,6 @@ cd checklist-app
 npm install
 npm run bundle:android
 ```
-
-O AAB sai em:
-
-`android/app/build/outputs/bundle/release/app-release.aab`
 
 ## Assinatura (keystore)
 
@@ -42,10 +39,10 @@ Credenciais geradas neste ambiente:
 ## Upload na Play Console
 
 1. Acesse [Google Play Console](https://play.google.com/console)
-2. Crie um app (nome: **Relato Campo**)
+2. Crie um app (nome: **Task-Flux**)
 3. Preencha ficha da loja, classificação de conteúdo, privacidade e público-alvo
 4. Em **Produção** (ou teste interno/fechado) → **Criar nova versão**
-5. Envie o arquivo `relato-campo-1.0.0.aab`
+5. Envie o arquivo `task-flux-1.0.0.aab`
 6. Revise e publique
 
 ## Observações
