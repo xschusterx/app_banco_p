@@ -32,9 +32,12 @@ export type SendEmailResult = {
   via: 'api' | 'share' | 'mailto'
 }
 
-function isEmailNotConfiguredError(status: number, message: string): boolean {
-  if (status !== 503) return false
-  return /RESEND_API_KEY|não configurado|nao configurado/i.test(message)
+/** 503 do Resend ausente, túnel morto (HTML) ou API fora — usa o aparelho. */
+function shouldFallbackToDevice(status: number, message: string): boolean {
+  if (status === 502 || status === 503 || status === 504) return true
+  return /RESEND_API_KEY|não configurado|nao configurado|Falha ao enviar e-mail \(50[234]\)/i.test(
+    message,
+  )
 }
 
 export function openMailto(emails: string[], subject: string, body: string): void {
@@ -140,7 +143,7 @@ export async function sendReportEmail(report: ChecklistReport): Promise<SendEmai
 
   if (!response.ok) {
     const message = payload.error || `Falha ao enviar e-mail (${response.status}).`
-    if (isEmailNotConfiguredError(response.status, message)) {
+    if (shouldFallbackToDevice(response.status, message)) {
       return sendViaDevice(report)
     }
     throw new Error(message)
