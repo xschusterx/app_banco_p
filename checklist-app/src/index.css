@@ -1009,3 +1009,135 @@ textarea {
     align-items: stretch;
   }
 }
+
+
+/* Observação por foto */
+.photo-grid-notes {
+  grid-template-columns: 1fr;
+}
+
+.photo-grid-item.has-note {
+  aspect-ratio: auto;
+  overflow: visible;
+  background: transparent;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.photo-thumb {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: rgba(27, 58, 47, 0.06);
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-note-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.photo-note-field span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-muted, rgba(20, 36, 29, 0.62));
+}
+
+.photo-note-field textarea,
+.photo-note-card textarea {
+  width: 100%;
+  border: 1px solid var(--line, rgba(20, 36, 29, 0.12));
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  resize: vertical;
+  background: var(--input-bg, #fff);
+  color: inherit;
+}
+
+.photo-note-text {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  background: var(--fog, #f3f7f4);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.photo-note-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+  background: rgba(10, 18, 14, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.photo-note-card {
+  width: min(100%, 26rem);
+  border-radius: 20px 20px 16px 16px;
+  background: var(--paper, #fbfcfb);
+  color: var(--ink, #14241d);
+  padding: 1rem 1rem 1.15rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.photo-note-card h3 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.15rem;
+}
+
+.photo-note-card p {
+  margin: 0;
+  color: var(--ink-muted, rgba(20, 36, 29, 0.62));
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.photo-note-preview {
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: #14241d;
+}
+
+.photo-note-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-note-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0.55rem;
+}
+
+@media (min-width: 720px) {
+  .photo-note-modal {
+    place-items: center;
+  }
+
+  .photo-note-card {
+    border-radius: 20px;
+  }
+
+  .photo-grid-notes.detail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,4 +1,4 @@
-import { normalizePhotoUrls } from './photos';
+import { withSyncedPhotoFields } from './photos';
 import type { AppData, ChecklistReport, Contact, ContactGroup } from './types';
 
 const STORAGE_KEY = 'task-flux-data-v2';
@@ -16,12 +16,7 @@ function emptyData(): AppData {
 }
 
 function migrateReport(report: ChecklistReport): ChecklistReport {
-  const photoDataUrls = normalizePhotoUrls(report);
-  return {
-    ...report,
-    photoDataUrls,
-    photoDataUrl: undefined,
-  };
+  return withSyncedPhotoFields(report);
 }
 
 function normalizeEmail(email: string): string {

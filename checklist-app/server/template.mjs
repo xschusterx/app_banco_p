@@ -41,6 +41,10 @@ export function buildTextEmail(report) {
     const count = Number(report.photoCount) || 1
     lines.push('')
     lines.push(count === 1 ? '1 foto anexada neste e-mail.' : `${count} fotos anexadas neste e-mail.`)
+    const notes = Array.isArray(report.photoNotes) ? report.photoNotes : []
+    notes.forEach((note, index) => {
+      if (note) lines.push(`  Foto ${index + 1}: ${note}`)
+    })
   }
   lines.push('')
   lines.push('— Enviado automaticamente pelo Task-Flux')
@@ -91,6 +95,7 @@ export function buildHtmlEmail(report) {
             ${report.inlinePhotoCids
               .map((cid, i) => {
                 const n = i + 1
+                const note = Array.isArray(report.photoNotes) ? String(report.photoNotes[i] || '').trim() : ''
                 return `
               <tr>
                 <td style="padding:0 0 14px;">
@@ -102,7 +107,12 @@ export function buildHtmlEmail(report) {
                     </tr>
                     <tr>
                       <td style="padding:10px 14px;background:#111827;color:#e5e7eb;font-size:12px;">
-                        Foto ${n} de ${report.inlinePhotoCids.length}
+                        <div style="font-weight:600;">Foto ${n} de ${report.inlinePhotoCids.length}</div>
+                        ${
+                          note
+                            ? `<div style="margin-top:6px;font-size:13px;line-height:1.4;color:#f8fafc;white-space:pre-wrap;">${escapeHtml(note)}</div>`
+                            : ''
+                        }
                       </td>
                     </tr>
                   </table>

@@ -137,6 +137,8 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       createdAt,
       photoDataUrl,
       photoDataUrls,
+      photoNotes,
+      photos: photosPayload,
     } = req.body || {}
 
     const recipients = normalizeEmails(to)
@@ -158,6 +160,12 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
 
     const photoUrls = collectPhotoDataUrls({ photoDataUrl, photoDataUrls })
     const photos = photoUrls.map((url) => extractPhotoBase64(url)).filter(Boolean)
+    const notesFromPayload = Array.isArray(photosPayload)
+      ? photosPayload.map((photo) => String(photo?.note || '').trim().slice(0, 500))
+      : Array.isArray(photoNotes)
+        ? photoNotes.map((note) => String(note || '').trim().slice(0, 500))
+        : []
+    const safePhotoNotes = photoUrls.map((_, index) => notesFromPayload[index] || '')
 
     const report = {
       title: safeTitle,
@@ -167,6 +175,7 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       createdAt: safeCreatedAt,
       hasPhoto: photos.length > 0,
       photoCount: photos.length,
+      photoNotes: safePhotoNotes,
     }
 
     const resend = new Resend(RESEND_API_KEY)
