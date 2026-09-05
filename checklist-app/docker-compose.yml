@@ -1,0 +1,20 @@
+# Opcional: sobe Task-Flux localmente com Docker
+# cp .env.example .env  # preencha RESEND_API_KEY, APP_SEND_TOKEN, CORS_ORIGIN
+# docker compose up --build
+
+services:
+  task-flux:
+    build:
+      context: .
+      args:
+        # Em produção no mesmo host, deixe vazio (mesma origem).
+        VITE_EMAIL_API_URL: ${VITE_EMAIL_API_URL:-}
+        VITE_APP_SEND_TOKEN: ${VITE_APP_SEND_TOKEN:-}
+    ports:
+      - "${PORT:-8787}:8787"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 8787
+    restart: unless-stopped

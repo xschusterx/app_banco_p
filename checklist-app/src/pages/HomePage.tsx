@@ -13,7 +13,7 @@ export function HomePage() {
           <p className="hero-brand">Task-Flux</p>
           <h1>Checklist</h1>
           <p className="hero-lead">
-            Faça relatórios simples e envie por e-mail — direto pela API ou pelo aparelho.
+            Faça relatórios simples e envie por e-mail automaticamente pelo servidor Task-Flux.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" to="/novo">

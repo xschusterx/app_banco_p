@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ContactPicker } from '../components/ContactPicker'
@@ -11,28 +11,120 @@ import {
   sendReportEmail,
 } from '../email'
 import { photosToReportFields } from '../photos'
-import { loadData, saveReport, uid } from '../storage'
-import type { ChecklistItem, ChecklistPhoto, ChecklistReport } from '../types'
+import {
+  clearDraft,
+  loadData,
+  loadDraft,
+  saveDraft,
+  saveReport,
+  uid,
+  type ChecklistDraft,
+} from '../storage'
+import type { ChecklistItem, ChecklistPhoto, ChecklistReport, Contact, ContactGroup } from '../types'
+
+function readAddressBook(): { contacts: Contact[]; groups: ContactGroup[]; defaultItems: string[] } {
+  const data = loadData()
+  return {
+    contacts: data.contacts,
+    groups: data.groups,
+    defaultItems: data.defaultItems,
+  }
+}
+
+function emptyForm(defaultItems: string[]) {
+  return {
+    title: 'Checklist',
+    location: '',
+    items: createItems(defaultItems),
+    observations: '',
+    photos: [] as ChecklistPhoto[],
+    selectedGroupIds: [] as string[],
+    selectedContactIds: [] as string[],
+    customEmail: '',
+  }
+}
+
+function formFromDraft(draft: ChecklistDraft) {
+  return {
+    title: draft.title || 'Checklist',
+    location: draft.location || '',
+    items: draft.items?.length ? draft.items : [],
+    observations: draft.observations || '',
+    photos: draft.photos || [],
+    selectedGroupIds: draft.selectedGroupIds || [],
+    selectedContactIds: draft.selectedContactIds || [],
+    customEmail: draft.customEmail || '',
+  }
+}
 
 export function NewChecklistPage() {
   const navigate = useNavigate()
-  const initial = useMemo(() => loadData(), [])
-  const [title, setTitle] = useState('Checklist')
-  const [location, setLocation] = useState('')
-  const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems))
+  const boot = readAddressBook()
+  const savedDraft = loadDraft()
+  const initialForm = savedDraft ? formFromDraft(savedDraft) : emptyForm(boot.defaultItems)
+
+  const [contacts, setContacts] = useState<Contact[]>(boot.contacts)
+  const [groups, setGroups] = useState<ContactGroup[]>(boot.groups)
+  const [title, setTitle] = useState(initialForm.title)
+  const [location, setLocation] = useState(initialForm.location)
+  const [items, setItems] = useState<ChecklistItem[]>(initialForm.items)
   const [newItem, setNewItem] = useState('')
-  const [observations, setObservations] = useState('')
-  const [photos, setPhotos] = useState<ChecklistPhoto[]>([])
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
-  const [customEmail, setCustomEmail] = useState('')
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const [observations, setObservations] = useState(initialForm.observations)
+  const [photos, setPhotos] = useState<ChecklistPhoto[]>(initialForm.photos)
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(initialForm.selectedGroupIds)
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(initialForm.selectedContactIds)
+  const [customEmail, setCustomEmail] = useState(initialForm.customEmail)
+  const [feedback, setFeedback] = useState<string | null>(
+    savedDraft ? 'Rascunho restaurado deste aparelho.' : null,
+  )
   const [sending, setSending] = useState(false)
   const [emailReady, setEmailReady] = useState<boolean | null>(null)
 
   useEffect(() => {
     void prefetchEmailConfigured().then((ok) => setEmailReady(ok))
   }, [])
+
+  // Recarrega contatos/grupos ao focar a página (após cadastrar em Contatos).
+  useEffect(() => {
+    function refreshContacts() {
+      const next = readAddressBook()
+      setContacts(next.contacts)
+      setGroups(next.groups)
+    }
+    refreshContacts()
+    window.addEventListener('focus', refreshContacts)
+    document.addEventListener('visibilitychange', refreshContacts)
+    return () => {
+      window.removeEventListener('focus', refreshContacts)
+      document.removeEventListener('visibilitychange', refreshContacts)
+    }
+  }, [])
+
+  // Persistência automática do rascunho (sem fotos enormes bloqueando a UI).
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      saveDraft({
+        title,
+        location,
+        items,
+        observations,
+        photos,
+        selectedGroupIds,
+        selectedContactIds,
+        customEmail,
+      })
+    }, 400)
+    return () => window.clearTimeout(timer)
+  }, [
+    title,
+    location,
+    items,
+    observations,
+    photos,
+    selectedGroupIds,
+    selectedContactIds,
+    customEmail,
+  ])
 
   function toggleItem(id: string) {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)))
@@ -63,16 +155,44 @@ export function NewChecklistPage() {
   }
 
   function collectEmails(): string[] {
-    const fromGroups = initial.groups
+    const fromGroups = groups
       .filter((g) => selectedGroupIds.includes(g.id))
       .flatMap((g) => g.emails)
-    const fromContacts = initial.contacts
+    const fromContacts = contacts
       .filter((c) => selectedContactIds.includes(c.id))
       .map((c) => c.email)
     const extra = customEmail.trim()
     const all = [...fromGroups, ...fromContacts]
     if (extra) all.push(extra)
     return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))))
+  }
+
+  function handleSaveDraft() {
+    saveDraft({
+      title,
+      location,
+      items,
+      observations,
+      photos,
+      selectedGroupIds,
+      selectedContactIds,
+      customEmail,
+    })
+    setFeedback('Rascunho salvo neste aparelho.')
+  }
+
+  function handleClearDraft() {
+    clearDraft()
+    const blank = emptyForm(readAddressBook().defaultItems)
+    setTitle(blank.title)
+    setLocation(blank.location)
+    setItems(blank.items)
+    setObservations(blank.observations)
+    setPhotos(blank.photos)
+    setSelectedGroupIds(blank.selectedGroupIds)
+    setSelectedContactIds(blank.selectedContactIds)
+    setCustomEmail(blank.customEmail)
+    setFeedback('Rascunho limpo.')
   }
 
   async function handleFinish() {
@@ -116,6 +236,7 @@ export function NewChecklistPage() {
     try {
       const result = await sendReportEmail(report)
       saveReport(report)
+      clearDraft()
       setFeedback(
         photos.length
           ? `Enviado para ${result.sentTo.join(', ')} com ${photos.length} foto(s) no e-mail.`
@@ -226,8 +347,8 @@ export function NewChecklistPage() {
       <ObservationsField value={observations} onChange={setObservations} />
 
       <ContactPicker
-        contacts={initial.contacts}
-        groups={initial.groups}
+        contacts={contacts}
+        groups={groups}
         selectedContactIds={selectedContactIds}
         selectedGroupIds={selectedGroupIds}
         onToggleContact={toggleContact}
@@ -239,6 +360,12 @@ export function NewChecklistPage() {
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="sticky-actions">
+        <button type="button" className="btn ghost wide" onClick={handleSaveDraft} disabled={sending}>
+          Salvar rascunho
+        </button>
+        <button type="button" className="btn ghost wide" onClick={handleClearDraft} disabled={sending}>
+          Limpar rascunho
+        </button>
         <button
           type="button"
           className="btn primary wide"

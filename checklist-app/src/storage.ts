@@ -1,10 +1,24 @@
 import { withSyncedPhotoFields } from './photos';
-import type { AppData, ChecklistReport, Contact, ContactGroup } from './types';
+import type { AppData, ChecklistItem, ChecklistPhoto, ChecklistReport, Contact, ContactGroup } from './types';
 
 const STORAGE_KEY = 'task-flux-data-v2';
+const DRAFT_KEY = 'task-flux-draft-v1';
 
 /** Lista inicia em branco; o usuário inclui os itens na tela. */
 const DEFAULT_ITEMS: string[] = [];
+
+/** Rascunho do checklist em andamento (localStorage). */
+export type ChecklistDraft = {
+  title: string;
+  location: string;
+  items: ChecklistItem[];
+  observations: string;
+  photos: ChecklistPhoto[];
+  selectedGroupIds: string[];
+  selectedContactIds: string[];
+  customEmail: string;
+  updatedAt: string;
+};
 
 function emptyData(): AppData {
   return {
@@ -103,4 +117,44 @@ export function deleteReport(id: string): AppData {
   data.reports = data.reports.filter((r) => r.id !== id);
   saveData(data);
   return data;
+}
+
+export function loadDraft(): ChecklistDraft | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ChecklistDraft>;
+    if (!parsed || typeof parsed !== 'object') return null;
+    return {
+      title: typeof parsed.title === 'string' ? parsed.title : 'Checklist',
+      location: typeof parsed.location === 'string' ? parsed.location : '',
+      items: Array.isArray(parsed.items) ? (parsed.items as ChecklistItem[]) : [],
+      observations: typeof parsed.observations === 'string' ? parsed.observations : '',
+      photos: Array.isArray(parsed.photos) ? (parsed.photos as ChecklistPhoto[]) : [],
+      selectedGroupIds: Array.isArray(parsed.selectedGroupIds) ? parsed.selectedGroupIds.map(String) : [],
+      selectedContactIds: Array.isArray(parsed.selectedContactIds)
+        ? parsed.selectedContactIds.map(String)
+        : [],
+      customEmail: typeof parsed.customEmail === 'string' ? parsed.customEmail : '',
+      updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveDraft(draft: Omit<ChecklistDraft, 'updatedAt'>): void {
+  const payload: ChecklistDraft = {
+    ...draft,
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+  } catch {
+    // Quota (fotos grandes): ignora — o envio ainda usa a API.
+  }
+}
+
+export function clearDraft(): void {
+  localStorage.removeItem(DRAFT_KEY);
 }

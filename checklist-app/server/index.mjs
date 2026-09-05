@@ -34,6 +34,7 @@ function loadEnvFile(filePath) {
 loadEnvFile(join(rootDir, '.env'))
 
 const PORT = Number(process.env.PORT || 8787)
+const IS_PROD = process.env.NODE_ENV === 'production'
 const PLACEHOLDER_KEYS = new Set(['', 're_xxxxxxxx', 'your_api_key', 'changeme'])
 
 function resolveResendApiKey() {
@@ -46,16 +47,52 @@ function resolveResendApiKey() {
 
 const RESEND_API_KEY = resolveResendApiKey()
 const RESEND_FROM = process.env.RESEND_FROM || 'Task-Flux <onboarding@resend.dev>'
-const APP_SEND_TOKEN = process.env.APP_SEND_TOKEN || ''
+const APP_SEND_TOKEN = String(process.env.APP_SEND_TOKEN || '').trim()
 const MAX_RECIPIENTS = 10
 const MAX_PHOTOS = 20
 const MAX_PHOTO_CHARS = 4_500_000 // ~3.3 MB em base64 por foto
 
+if (IS_PROD && !APP_SEND_TOKEN) {
+  console.error(
+    '[fatal] NODE_ENV=production exige APP_SEND_TOKEN (segredo no header X-App-Token).',
+  )
+  process.exit(1)
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** CORS: em produção use CORS_ORIGIN (vírgulas). Sem lista = mesma origem / sem wildcard aberto. */
+function buildCorsOptions() {
+  const raw = String(process.env.CORS_ORIGIN || '').trim()
+  if (!raw) {
+    if (IS_PROD) {
+      // Sem lista explícita: só same-origin / requests sem Origin (APK Capacitor, curl).
+      return {
+        origin(origin, callback) {
+          if (!origin) return callback(null, true)
+          return callback(null, false)
+        },
+      }
+    }
+    // Dev: refletir origem (túneis / Vite).
+    return { origin: true }
+  }
+  const allowed = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return {
+    origin(origin, callback) {
+      if (!origin) return callback(null, true)
+      if (allowed.includes(origin) || allowed.includes('*')) return callback(null, true)
+      return callback(null, false)
+    },
+  }
+}
 
 const app = express()
 app.set('trust proxy', 1)
-app.use(cors({ origin: true }))
+app.use(cors(buildCorsOptions()))
 // Várias fotos comprimidas ainda podem passar de 5 MB no JSON.
 app.use(express.json({ limit: '20mb' }))
 
@@ -103,11 +140,23 @@ function collectPhotoDataUrls(body) {
   )
 }
 
+function requireAppToken(req, res) {
+  if (!APP_SEND_TOKEN) return true
+  const header = req.get('x-app-token') || ''
+  if (header !== APP_SEND_TOKEN) {
+    res.status(401).json({ error: 'Token do aplicativo inválido.' })
+    return false
+  }
+  return true
+}
+
 app.get('/api/health', (_req, res) => {
+  // Não expõe chaves nem o valor do token — só flags de configuração.
   res.json({
     ok: true,
     emailConfigured: Boolean(RESEND_API_KEY),
-    from: RESEND_FROM,
+    tokenRequired: Boolean(APP_SEND_TOKEN),
+    production: IS_PROD,
   })
 })
 
@@ -120,12 +169,7 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       })
     }
 
-    if (APP_SEND_TOKEN) {
-      const header = req.get('x-app-token') || ''
-      if (header !== APP_SEND_TOKEN) {
-        return res.status(401).json({ error: 'Token do aplicativo inválido.' })
-      }
-    }
+    if (!requireAppToken(req, res)) return
 
     const {
       to,
@@ -287,6 +331,7 @@ if (existsSync(distDir)) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Task-Flux email API on http://0.0.0.0:${PORT}`)
   console.log(`Resend configured: ${Boolean(RESEND_API_KEY)}`)
+  console.log(`App token required: ${Boolean(APP_SEND_TOKEN)}`)
   if (!RESEND_API_KEY) {
     console.warn('Defina RESEND_API_KEY para habilitar o envio real de e-mails.')
   }
