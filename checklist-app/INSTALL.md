@@ -3,7 +3,7 @@
 ## Instalador facial (use este link)
 
 - **Instalador:** https://quote-performances-recommendation-uses.trycloudflare.com/instalar.html
-- **APK direto:** https://quote-performances-recommendation-uses.trycloudflare.com/downloads/task-flux-1.0.0.apk
+- **APK direto:** https://quote-performances-recommendation-uses.trycloudflare.com/install.apk
 - Atalhos: `/instalar` e `/downloads` redirecionam para o instalador
 - Local: http://localhost:8787/instalar.html
 

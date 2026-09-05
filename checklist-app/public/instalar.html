@@ -335,13 +335,11 @@
 
         <!-- Fallback visível mesmo se o JS falhar -->
         <div class="actions" id="actions">
-          <a class="btn btn-primary" id="apkBtn" href="/downloads/task-flux-1.0.0.apk"
-            >Baixar APK Android</a
-          >
+          <a class="btn btn-primary" id="apkBtn" href="/install.apk">Instalar o app agora</a>
           <a class="btn btn-secondary" href="./">Abrir app (web / iPhone)</a>
         </div>
         <div class="hint" id="hint">
-          <p><strong>Android:</strong> toque em Baixar APK → permita fontes desconhecidas → Instalar.</p>
+          <p><strong>Android:</strong> toque em Instalar → na barra de download toque em <strong>Abrir</strong> (não abra a pasta) → Instalar.</p>
           <p><strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.</p>
         </div>
         <p class="status" id="status" aria-live="polite"></p>
@@ -354,7 +352,8 @@
 
     <script>
       (function () {
-        var APK = '/downloads/task-flux-1.0.0.apk';
+        // /install.apk usa headers que pedem o instalador do Android
+        var APK = '/install.apk';
         var IOS_ZIP = '/downloads/task-flux-ios-xcode-1.0.0.zip';
         var ua = navigator.userAgent || '';
         var isIOS =
@@ -386,26 +385,39 @@
           while (el.firstChild) el.removeChild(el.firstChild);
         }
 
+        function startAndroidInstall(event) {
+          if (event) event.preventDefault();
+          statusEl.className = 'status ok';
+          statusEl.innerHTML =
+            'Baixando o instalador… Em seguida toque em <strong>Abrir</strong> na barra/notificação do Chrome — <strong>não abra a pasta</strong>. Depois confirme <strong>Instalar</strong>.';
+          hint.innerHTML =
+            '<ol>' +
+            '<li>Na barra inferior (ou notificação), toque em <strong>Abrir</strong>.</li>' +
+            '<li>Se pedir, permita <strong>Instalar apps desconhecidos</strong> para o Chrome/navegador.</li>' +
+            '<li>Na tela do instalador Android, toque em <strong>Instalar</strong>.</li>' +
+            '<li>Se abriu uma pasta por engano, toque no arquivo <strong>Task-Flux.apk</strong>.</li>' +
+            '</ol>';
+          // Navegação completa (não "salvar como"): ajuda o Chrome a oferecer Abrir/Instalar.
+          window.location.assign(APK);
+        }
+
         clear(actions);
 
         if (isAndroid) {
           headline.textContent = 'Instalar no Android';
-          lede.textContent = 'Toque no botão abaixo. O Chrome deve oferecer abrir/instalar o APK.';
-          // Sem atributo download: no Android isso abre o instalador com mais frequência.
-          var installBtn = btn(APK, 'Instalar APK agora', true);
-          installBtn.addEventListener('click', function () {
-            statusEl.className = 'status ok';
-            statusEl.textContent = 'Abrindo o APK… Se só baixar, abra em Downloads e toque em Instalar.';
-          });
+          lede.textContent =
+            'Toque no botão. O celular deve abrir o instalador do app — não a pasta de arquivos.';
+          var installBtn = btn(APK, 'Instalar o app agora', true);
+          installBtn.addEventListener('click', startAndroidInstall);
           actions.appendChild(installBtn);
           actions.appendChild(btn('./', 'Abrir no navegador', false));
           hint.innerHTML =
             '<ol>' +
-            '<li>Toque em <strong>Instalar APK agora</strong>.</li>' +
-            '<li>Se o Chrome pedir, permita <strong>fontes desconhecidas</strong> / instalar apps deste navegador.</li>' +
-            '<li>Confirme <strong>Instalar</strong>. Pacote: <code>com.taskflux.app</code>.</li>' +
+            '<li>Toque em <strong>Instalar o app agora</strong>.</li>' +
+            '<li>Quando o download terminar, toque em <strong>Abrir</strong> (não em “pasta” / Arquivos).</li>' +
+            '<li>Permita fontes desconhecidas se pedir e confirme <strong>Instalar</strong>.</li>' +
             '</ol>';
-          alt.textContent = 'Também no iPhone? Abra esta página no Safari.';
+          alt.textContent = 'Pacote: com.taskflux.app · arquivo Task-Flux.apk';
         } else if (isIOS) {
           headline.textContent = 'Instalar no iPhone';
           lede.textContent = 'Use o Safari para adicionar o Task-Flux à Tela de Início.';
@@ -420,29 +432,30 @@
             'Tem Mac e quer o app nativo? <a href="' + IOS_ZIP + '">Baixar projeto Xcode</a>.';
         } else {
           headline.textContent = 'Instalador Task-Flux';
-          lede.textContent = 'No celular esta página mostra o caminho certo. No computador, baixe o APK:';
-          actions.appendChild(btn(APK, 'Baixar APK Android', true));
+          lede.textContent = 'Abra esta página no celular Android para instalar com um toque.';
+          var desktopBtn = btn(APK, 'Baixar APK Android', true);
+          actions.appendChild(desktopBtn);
           actions.appendChild(btn('./', 'Abrir app (web / iPhone)', false));
           hint.innerHTML =
-            '<p><strong>Android:</strong> abra este link no celular → Instalar APK → permita fontes desconhecidas.</p>' +
+            '<p><strong>No Android:</strong> abra este link no celular → Instalar o app agora → toque em <strong>Abrir</strong> (não abra a pasta) → Instalar.</p>' +
             '<p><strong>iPhone:</strong> Safari → Compartilhar → Adicionar à Tela de Início.</p>';
           alt.innerHTML =
             'Desenvolvedor iOS: <a href="' + IOS_ZIP + '">projeto Xcode (.zip)</a>';
         }
 
-        // Verifica se o APK está acessível
         fetch(APK, { method: 'HEAD', cache: 'no-store' })
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             if (!isAndroid) {
               statusEl.className = 'status ok';
-              statusEl.textContent = 'APK disponível (' + (res.headers.get('content-length') || '?') + ' bytes).';
+              statusEl.textContent =
+                'APK pronto (' + (res.headers.get('content-length') || '?') + ' bytes).';
             }
           })
           .catch(function () {
             statusEl.className = 'status error';
             statusEl.textContent =
-              'Não foi possível alcançar o APK neste servidor. Tente de novo ou peça um link atualizado.';
+              'Não foi possível alcançar o APK neste servidor. Atualize o link do túnel e tente de novo.';
           });
       })();
     </script>

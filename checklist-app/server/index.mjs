@@ -226,6 +226,23 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
 
 const releaseDir = join(rootDir, 'release')
 const downloadsDir = existsSync(releaseDir) ? releaseDir : join(rootDir, 'dist', 'downloads')
+const APK_FILE = 'task-flux-1.0.0.apk'
+const APK_DOWNLOAD_NAME = 'Task-Flux.apk'
+
+function sendApk(res, next, { asAttachment = true } = {}) {
+  const full = join(downloadsDir, APK_FILE)
+  if (!existsSync(full)) return res.status(404).send('APK não encontrado')
+  // MIME de pacote Android + nome .apk: o Chrome costuma oferecer "Abrir" no instalador
+  // em vez de só abrir a pasta de Downloads.
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive')
+  res.setHeader(
+    'Content-Disposition',
+    `${asAttachment ? 'attachment' : 'inline'}; filename="${APK_DOWNLOAD_NAME}"`,
+  )
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Cache-Control', 'no-store')
+  return res.sendFile(full, (err) => (err ? next(err) : undefined))
+}
 
 app.get(['/instalar', '/instalar/'], (_req, res) => {
   res.redirect(302, '/instalar.html')
@@ -235,27 +252,27 @@ app.get(['/downloads', '/downloads/'], (_req, res) => {
   res.redirect(302, '/instalar.html')
 })
 
+/** Atalho direto para o instalador Android (headers otimizados). */
+app.get(['/install.apk', '/install/android', '/Task-Flux.apk'], (_req, res, next) => {
+  return sendApk(res, next, { asAttachment: true })
+})
+
 app.get('/downloads/:file', (req, res, next) => {
-  const allowed = new Set(['task-flux-1.0.0.apk', 'task-flux-ios-xcode-1.0.0.zip'])
+  const allowed = new Set([APK_FILE, 'task-flux-ios-xcode-1.0.0.zip'])
   const file = String(req.params.file || '')
   if (!allowed.has(file)) return res.status(404).send('Not found')
+  if (file.endsWith('.apk')) {
+    return sendApk(res, next, { asAttachment: true })
+  }
   const full = join(downloadsDir, file)
   if (!existsSync(full)) return res.status(404).send('Not found')
-  if (file.endsWith('.apk')) {
-    // inline + package MIME: no Android Chrome costuma oferecer Abrir/Instalar
-    // em vez de só salvar o arquivo sem feedback.
-    res.setHeader('Content-Type', 'application/vnd.android.package-archive')
-    res.setHeader('Content-Disposition', `inline; filename="${file}"`)
-    res.setHeader('Cache-Control', 'no-store')
-    return res.sendFile(full, (err) => (err ? next(err) : undefined))
-  }
   return res.download(full, file, (err) => (err ? next(err) : undefined))
 })
 
 const distDir = join(rootDir, 'dist')
 if (existsSync(distDir)) {
   app.use(express.static(distDir))
-  app.get(/^(?!\/api)(?!\/downloads)(?!\/instalar\.html).*/, (_req, res) => {
+  app.get(/^(?!\/api)(?!\/downloads)(?!\/install\.apk)(?!\/install\/)(?!\/Task-Flux\.apk)(?!\/instalar\.html).*/, (_req, res) => {
     res.sendFile(join(distDir, 'index.html'))
   })
 } else {
