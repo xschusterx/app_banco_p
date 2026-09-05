@@ -259,7 +259,7 @@ textarea {
   min-height: min(78vh, 640px);
   margin: 0 -1rem 1.75rem;
   overflow: hidden;
-  color: var(--on-strong);
+  color: #f4faf6;
   background:
     linear-gradient(120deg, rgba(20, 36, 29, 0.55), rgba(27, 58, 47, 0.35)),
     url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80')
@@ -301,6 +301,8 @@ textarea {
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 0.95;
+  color: #ffffff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
   animation: brandIn 0.7s ease both;
 }
 
