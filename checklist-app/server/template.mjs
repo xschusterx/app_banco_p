@@ -30,7 +30,8 @@ export function buildTextEmail(report) {
   lines.push(report.observations || '(sem observações)')
   if (report.hasPhoto) {
     lines.push('')
-    lines.push('Foto: anexada neste e-mail.')
+    const count = Number(report.photoCount) || 1
+    lines.push(count === 1 ? 'Foto: anexada neste e-mail.' : `${count} fotos: anexadas neste e-mail.`)
   }
   lines.push('')
   lines.push('— Enviado pelo Task-Flux')
@@ -77,7 +78,11 @@ export function buildHtmlEmail(report) {
               <p style="margin:0;white-space:pre-wrap;font-size:14px;line-height:1.5;color:#374151;">${escapeHtml(report.observations || 'Sem observações.')}</p>
               ${
                 report.hasPhoto
-                  ? '<p style="margin:18px 0 0;font-size:13px;color:#4b5563;">A foto do checklist está anexada a este e-mail.</p>'
+                  ? `<p style="margin:18px 0 0;font-size:13px;color:#4b5563;">${
+                      Number(report.photoCount) > 1
+                        ? `${Number(report.photoCount)} fotos do checklist estão anexadas a este e-mail.`
+                        : 'A foto do checklist está anexada a este e-mail.'
+                    }</p>`
                   : ''
               }
             </td>

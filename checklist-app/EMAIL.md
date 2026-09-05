@@ -6,7 +6,10 @@ O fluxo preferido é:
 2. Ao finalizar, o app monta o relatório (texto + HTML)  
 3. O **servidor** envia via [Resend](https://resend.com) com a chave de API **privada**
 
-Se `RESEND_API_KEY` **não** estiver configurada (ou for um placeholder inválido), o app **não falha**: ele usa o compartilhamento nativo ou abre o app de e-mail do aparelho (`mailto:`) para você concluir o envio.
+Se `RESEND_API_KEY` **não** estiver configurada (ou for um placeholder inválido), o app **não falha**: ele usa o compartilhamento nativo (com as fotos, quando o aparelho permitir) ou abre o app de e-mail (`mailto:`).
+
+> **Importante:** `mailto:` **não anexa fotos**. Sem `RESEND_API_KEY`, use o compartilhamento do aparelho (ou configure a chave) para o destinatário receber as imagens. O app aceita até **5 fotos** por checklist (comprimidas antes do envio).
+
 
 ## Por que backend?
 

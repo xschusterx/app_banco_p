@@ -1,9 +1,11 @@
 import type { ChecklistItem, ChecklistReport } from './types'
+import { normalizePhotoUrls } from './photos'
 
 const API_BASE = (import.meta.env.VITE_EMAIL_API_URL as string | undefined)?.replace(/\/$/, '') || ''
 const APP_TOKEN = (import.meta.env.VITE_APP_SEND_TOKEN as string | undefined) || ''
 
 export function buildEmailBody(report: ChecklistReport): string {
+  const photos = normalizePhotoUrls(report)
   const lines: string[] = []
   lines.push(`Checklist: ${report.title}`)
   if (report.location) lines.push(`Veículo / placa: ${report.location}`)
@@ -16,9 +18,13 @@ export function buildEmailBody(report: ChecklistReport): string {
   lines.push('')
   lines.push('Observações:')
   lines.push(report.observations.trim() || '(sem observações)')
-  if (report.photoDataUrl) {
+  if (photos.length) {
     lines.push('')
-    lines.push('Foto: anexada no e-mail (ou compartilhada pelo aparelho).')
+    lines.push(
+      photos.length === 1
+        ? 'Foto: anexada no e-mail (ou compartilhada pelo aparelho).'
+        : `${photos.length} fotos: anexadas no e-mail (ou compartilhadas pelo aparelho).`,
+    )
   }
   lines.push('')
   lines.push('— Enviado pelo Task-Flux')
@@ -42,7 +48,6 @@ function shouldFallbackToDevice(status: number, message: string): boolean {
 
 export function openMailto(emails: string[], subject: string, body: string): void {
   const url = `mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  // Prefer anchor click so the SPA stays on the page and feedback can show.
   const anchor = document.createElement('a')
   anchor.href = url
   anchor.rel = 'noopener'
@@ -52,14 +57,25 @@ export function openMailto(emails: string[], subject: string, body: string): voi
   anchor.remove()
 }
 
-/** Fallback quando a API Resend não está configurada: compartilha ou abre o app de e-mail. */
+async function dataUrlToFile(dataUrl: string, index: number): Promise<File> {
+  const blob = await (await fetch(dataUrl)).blob()
+  const ext = blob.type.includes('png') ? 'png' : 'jpg'
+  return new File([blob], `checklist-foto-${index + 1}.${ext}`, {
+    type: blob.type || 'image/jpeg',
+  })
+}
+
+/**
+ * Fallback sem Resend: tenta compartilhar COM as fotos.
+ * mailto: não anexa imagem — por isso preferimos share quando há fotos.
+ */
 export async function shareReport(options: {
   emails: string[]
   subject: string
   body: string
-  photoDataUrl: string | null
+  photoDataUrls: string[]
 }): Promise<'shared' | 'mailto'> {
-  const { emails, subject, body, photoDataUrl } = options
+  const { emails, subject, body, photoDataUrls } = options
 
   if (navigator.share) {
     try {
@@ -68,12 +84,11 @@ export async function shareReport(options: {
         text: `${body}\n\nPara: ${emails.join(', ')}`,
       }
 
-      if (photoDataUrl && navigator.canShare) {
-        const blob = await (await fetch(photoDataUrl)).blob()
-        const file = new File([blob], 'checklist-foto.jpg', { type: blob.type || 'image/jpeg' })
-        const withFile = { ...data, files: [file] }
-        if (navigator.canShare(withFile)) {
-          await navigator.share(withFile)
+      if (photoDataUrls.length && navigator.canShare) {
+        const files = await Promise.all(photoDataUrls.map((url, i) => dataUrlToFile(url, i)))
+        const withFiles = { ...data, files }
+        if (navigator.canShare(withFiles)) {
+          await navigator.share(withFiles)
           return 'shared'
         }
       }
@@ -90,13 +105,14 @@ export async function shareReport(options: {
 }
 
 async function sendViaDevice(report: ChecklistReport): Promise<SendEmailResult> {
+  const photos = normalizePhotoUrls(report)
   const subject = `Checklist: ${report.title}`
   const body = buildEmailBody(report)
   const deviceVia = await shareReport({
     emails: report.sentTo,
     subject,
     body,
-    photoDataUrl: report.photoDataUrl,
+    photoDataUrls: photos,
   })
   return {
     ok: true,
@@ -107,6 +123,7 @@ async function sendViaDevice(report: ChecklistReport): Promise<SendEmailResult> 
 }
 
 export async function sendReportEmail(report: ChecklistReport): Promise<SendEmailResult> {
+  const photos = normalizePhotoUrls(report)
   const url = `${API_BASE}/api/send-email`
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -126,11 +143,12 @@ export async function sendReportEmail(report: ChecklistReport): Promise<SendEmai
         items: report.items.map((item) => ({ label: item.label, done: item.done })),
         observations: report.observations,
         createdAt: report.createdAt,
-        photoDataUrl: report.photoDataUrl,
+        photoDataUrls: photos,
+        // compatível com API antiga
+        photoDataUrl: photos[0] ?? null,
       }),
     })
   } catch {
-    // Sem rede / API offline: ainda permite enviar pelo aparelho.
     return sendViaDevice(report)
   }
 

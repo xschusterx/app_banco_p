@@ -48,14 +48,16 @@ const RESEND_API_KEY = resolveResendApiKey()
 const RESEND_FROM = process.env.RESEND_FROM || 'Task-Flux <onboarding@resend.dev>'
 const APP_SEND_TOKEN = process.env.APP_SEND_TOKEN || ''
 const MAX_RECIPIENTS = 10
-const MAX_PHOTO_CHARS = 4_500_000 // ~3.3 MB em base64
+const MAX_PHOTOS = 5
+const MAX_PHOTO_CHARS = 4_500_000 // ~3.3 MB em base64 por foto
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const app = express()
 app.set('trust proxy', 1)
 app.use(cors({ origin: true }))
-app.use(express.json({ limit: '5mb' }))
+// Várias fotos comprimidas ainda podem passar de 5 MB no JSON.
+app.use(express.json({ limit: '20mb' }))
 
 const sendLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -83,13 +85,22 @@ function normalizeEmails(list) {
 function extractPhotoBase64(photoDataUrl) {
   if (!photoDataUrl || typeof photoDataUrl !== 'string') return null
   if (photoDataUrl.length > MAX_PHOTO_CHARS) {
-    const err = new Error('A foto é grande demais para anexar no e-mail.')
+    const err = new Error('Uma das fotos é grande demais para anexar no e-mail.')
     err.status = 413
     throw err
   }
   const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(photoDataUrl)
   if (!match) return null
   return { contentType: match[1], content: match[2] }
+}
+
+function collectPhotoDataUrls(body) {
+  const fromList = Array.isArray(body?.photoDataUrls) ? body.photoDataUrls : []
+  const legacy = body?.photoDataUrl ? [body.photoDataUrl] : []
+  return Array.from(new Set([...fromList, ...legacy].filter((u) => typeof u === 'string' && u.startsWith('data:image/')))).slice(
+    0,
+    MAX_PHOTOS,
+  )
 }
 
 app.get('/api/health', (_req, res) => {
@@ -125,6 +136,7 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       observations,
       createdAt,
       photoDataUrl,
+      photoDataUrls,
     } = req.body || {}
 
     const recipients = normalizeEmails(to)
@@ -144,16 +156,19 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
         }))
       : []
 
+    const photoUrls = collectPhotoDataUrls({ photoDataUrl, photoDataUrls })
+    const photos = photoUrls.map((url) => extractPhotoBase64(url)).filter(Boolean)
+
     const report = {
       title: safeTitle,
       location: safeLocation,
       items: safeItems,
       observations: safeObservations,
       createdAt: safeCreatedAt,
-      hasPhoto: Boolean(photoDataUrl),
+      hasPhoto: photos.length > 0,
+      photoCount: photos.length,
     }
 
-    const photo = extractPhotoBase64(photoDataUrl)
     const resend = new Resend(RESEND_API_KEY)
 
     const payload = {
@@ -164,14 +179,15 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       html: buildHtmlEmail(report),
     }
 
-    if (photo) {
-      const ext = photo.contentType.includes('png') ? 'png' : 'jpg'
-      payload.attachments = [
-        {
-          filename: `checklist-foto.${ext}`,
+    if (photos.length) {
+      payload.attachments = photos.map((photo, index) => {
+        const ext = photo.contentType.includes('png') ? 'png' : 'jpg'
+        return {
+          filename: `checklist-foto-${index + 1}.${ext}`,
           content: photo.content,
-        },
-      ]
+          contentType: photo.contentType,
+        }
+      })
     }
 
     const { data, error } = await resend.emails.send(payload)

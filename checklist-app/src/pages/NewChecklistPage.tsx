@@ -16,7 +16,7 @@ export function NewChecklistPage() {
   const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems));
   const [newItem, setNewItem] = useState('');
   const [observations, setObservations] = useState('');
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoDataUrls, setPhotoDataUrls] = useState<string[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [customEmail, setCustomEmail] = useState('');
@@ -82,7 +82,7 @@ export function NewChecklistPage() {
       location: location.trim(),
       items,
       observations: observations.trim(),
-      photoDataUrl,
+      photoDataUrls,
       createdAt: new Date().toISOString(),
       sentTo: emails,
     };
@@ -93,11 +93,23 @@ export function NewChecklistPage() {
       const result = await sendReportEmail(report);
       saveReport(report);
       if (result.via === 'api') {
-        setFeedback('Checklist enviado por e-mail.');
+        setFeedback(
+          photoDataUrls.length
+            ? `Checklist enviado por e-mail com ${photoDataUrls.length} foto(s) anexada(s).`
+            : 'Checklist enviado por e-mail.',
+        );
       } else if (result.via === 'share') {
-        setFeedback('Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.');
+        setFeedback(
+          photoDataUrls.length
+            ? 'Checklist salvo. No compartilhamento, escolha o app de e-mail para enviar com as fotos.'
+            : 'Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.',
+        );
       } else {
-        setFeedback('Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.');
+        setFeedback(
+          photoDataUrls.length
+            ? 'Checklist salvo. O app de e-mail foi aberto, mas mailto não anexa fotos — use compartilhar ou configure RESEND_API_KEY.'
+            : 'Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.',
+        );
       }
       setSending(false);
       setTimeout(() => navigate(`/historico/${report.id}`), 900);
@@ -176,7 +188,7 @@ export function NewChecklistPage() {
         </form>
       </section>
 
-      <PhotoCapture photoDataUrl={photoDataUrl} onChange={setPhotoDataUrl} />
+      <PhotoCapture photoDataUrls={photoDataUrls} onChange={setPhotoDataUrls} />
       <ObservationsField value={observations} onChange={setObservations} />
 
       <ContactPicker
