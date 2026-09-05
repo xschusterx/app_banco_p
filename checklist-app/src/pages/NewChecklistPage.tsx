@@ -1,85 +1,98 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ContactPicker } from '../components/ContactPicker';
-import { ObservationsField } from '../components/ObservationsField';
-import { PhotoCapture } from '../components/PhotoCapture';
-import { createItems, prefetchEmailConfigured, sendReportEmail } from '../email';
-import { loadData, saveReport, uid } from '../storage';
-import type { ChecklistItem, ChecklistReport } from '../types';
+import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ContactPicker } from '../components/ContactPicker'
+import { ObservationsField } from '../components/ObservationsField'
+import { PhotoCapture } from '../components/PhotoCapture'
+import {
+  createItems,
+  getCachedEmailConfigured,
+  prefetchEmailConfigured,
+  sendReportEmail,
+} from '../email'
+import { loadData, saveReport, uid } from '../storage'
+import type { ChecklistItem, ChecklistReport } from '../types'
 
 export function NewChecklistPage() {
-  const navigate = useNavigate();
-  const initial = useMemo(() => loadData(), []);
-  const [title, setTitle] = useState('Checklist');
-  const [location, setLocation] = useState('');
-  const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems));
-  const [newItem, setNewItem] = useState('');
-  const [observations, setObservations] = useState('');
-  const [photoDataUrls, setPhotoDataUrls] = useState<string[]>([]);
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
-  const [customEmail, setCustomEmail] = useState('');
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
+  const navigate = useNavigate()
+  const initial = useMemo(() => loadData(), [])
+  const [title, setTitle] = useState('Checklist')
+  const [location, setLocation] = useState('')
+  const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems))
+  const [newItem, setNewItem] = useState('')
+  const [observations, setObservations] = useState('')
+  const [photoDataUrls, setPhotoDataUrls] = useState<string[]>([])
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
+  const [customEmail, setCustomEmail] = useState('')
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+  const [emailReady, setEmailReady] = useState<boolean | null>(null)
 
-  // Descobre cedo se há Resend — assim o Finalizar não faz POST antes do Compartilhar no iPhone.
   useEffect(() => {
-    void prefetchEmailConfigured();
-  }, []);
+    void prefetchEmailConfigured().then((ok) => setEmailReady(ok))
+  }, [])
 
   function toggleItem(id: string) {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)))
   }
 
   function addItem(e: FormEvent) {
-    e.preventDefault();
-    const label = newItem.trim();
-    if (!label) return;
-    setItems((prev) => [...prev, { id: uid(), label, done: false }]);
-    setNewItem('');
+    e.preventDefault()
+    const label = newItem.trim()
+    if (!label) return
+    setItems((prev) => [...prev, { id: uid(), label, done: false }])
+    setNewItem('')
   }
 
   function removeItem(id: string) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
   function toggleGroup(id: string) {
     setSelectedGroupIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    )
   }
 
   function toggleContact(id: string) {
     setSelectedContactIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    )
   }
 
   function collectEmails(): string[] {
     const fromGroups = initial.groups
       .filter((g) => selectedGroupIds.includes(g.id))
-      .flatMap((g) => g.emails);
+      .flatMap((g) => g.emails)
     const fromContacts = initial.contacts
       .filter((c) => selectedContactIds.includes(c.id))
-      .map((c) => c.email);
-    const extra = customEmail.trim();
-    const all = [...fromGroups, ...fromContacts];
-    if (extra) all.push(extra);
-    return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))));
+      .map((c) => c.email)
+    const extra = customEmail.trim()
+    const all = [...fromGroups, ...fromContacts]
+    if (extra) all.push(extra)
+    return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))))
   }
 
   async function handleFinish() {
-    const emails = collectEmails();
+    const emails = collectEmails()
     if (!title.trim()) {
-      setFeedback('Informe um título para o checklist.');
-      return;
+      setFeedback('Informe um título para o checklist.')
+      return
     }
     if (!emails.length) {
-      setFeedback('Selecione um contato, um grupo ou digite um e-mail para enviar.');
-      return;
+      setFeedback('Escolha um contato/grupo cadastrado ou informe o e-mail de destino.')
+      return
     }
-    if (sending) return;
+    if (sending) return
+
+    const ready = emailReady ?? getCachedEmailConfigured()
+    if (ready === false) {
+      setFeedback(
+        'Envio automático desligado: falta RESEND_API_KEY no servidor (EMAIL.md). Sem isso o app não consegue enviar as fotos sem abrir seu e-mail.',
+      )
+      return
+    }
 
     const report: ChecklistReport = {
       id: uid(),
@@ -90,47 +103,30 @@ export function NewChecklistPage() {
       photoDataUrls,
       createdAt: new Date().toISOString(),
       sentTo: emails,
-    };
+    }
 
-    setSending(true);
+    setSending(true)
     setFeedback(
       photoDataUrls.length
-        ? 'Salvando e abrindo o compartilhamento com as fotos…'
-        : 'Salvando e enviando o checklist por e-mail…',
-    );
+        ? `Enviando checklist com ${photoDataUrls.length} foto(s) pelo servidor…`
+        : 'Enviando checklist pelo servidor…',
+    )
     try {
-      const result = await sendReportEmail(report);
-      saveReport(report);
-      if (result.via === 'api') {
-        setFeedback(
-          photoDataUrls.length
-            ? `Checklist enviado por e-mail com ${photoDataUrls.length} foto(s) anexada(s).`
-            : 'Checklist enviado por e-mail.',
-        );
-      } else if (result.via === 'share') {
-        setFeedback(
-          photoDataUrls.length
-            ? 'Checklist salvo. Se o Mail abriu pelo Compartilhar, confira os anexos das fotos antes de enviar.'
-            : 'Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.',
-        );
-      } else if (result.via === 'cancelled') {
-        setFeedback(
-          'Checklist salvo neste aparelho. O compartilhamento foi fechado — toque em Finalizar de novo e escolha Mail para anexar as fotos.',
-        );
-      } else {
-        setFeedback(
-          photoDataUrls.length
-            ? 'Checklist salvo. O app de e-mail foi aberto, mas mailto não anexa fotos — use Compartilhar ou configure RESEND_API_KEY.'
-            : 'Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.',
-        );
-      }
-      setSending(false);
-      setTimeout(() => navigate(`/historico/${report.id}`), result.via === 'cancelled' ? 1600 : 900);
+      const result = await sendReportEmail(report)
+      saveReport(report)
+      setFeedback(
+        photoDataUrls.length
+          ? `Enviado para ${result.sentTo.join(', ')} com ${photoDataUrls.length} foto(s) no e-mail.`
+          : `Enviado para ${result.sentTo.join(', ')}.`,
+      )
+      setSending(false)
+      setTimeout(() => navigate(`/historico/${report.id}`), 900)
     } catch (error) {
-      saveReport(report);
-      const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';
-      setFeedback(`Checklist salvo neste aparelho. ${message}`);
-      setSending(false);
+      saveReport(report)
+      const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.'
+      setFeedback(`Checklist salvo neste aparelho. ${message}`)
+      setEmailReady(getCachedEmailConfigured())
+      setSending(false)
     }
   }
 
@@ -138,8 +134,27 @@ export function NewChecklistPage() {
     <div className="page form-page">
       <header className="page-intro">
         <h1>Novo checklist</h1>
-        <p>Inclua os itens, tire fotos, descreva e envie. Com a API configurada, o envio é direto; senão, usamos o e-mail/compartilhamento do aparelho.</p>
+        <p>
+          Tire fotos, marque os itens e envie. O e-mail sai pelo servidor Task-Flux — sem abrir sua
+          caixa de entrada — e as fotos aparecem no corpo do relatório.
+        </p>
       </header>
+
+      {emailReady === false ? (
+        <div className="banner warn" role="status">
+          <strong>Envio automático indisponível.</strong>
+          <span>
+            {' '}
+            Configure <code>RESEND_API_KEY</code> no servidor (veja <code>EMAIL.md</code>) para
+            mandar as fotos de verdade sem usar o e-mail do celular.
+          </span>
+        </div>
+      ) : null}
+      {emailReady === true ? (
+        <div className="banner ok" role="status">
+          Envio automático ativo: o destinatário recebe o relatório formatado com as fotos.
+        </div>
+      ) : null}
 
       <section className="form-block">
         <label className="field">
@@ -218,10 +233,15 @@ export function NewChecklistPage() {
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="sticky-actions">
-        <button type="button" className="btn primary wide" onClick={() => void handleFinish()} disabled={sending}>
-          {sending ? 'Enviando…' : 'Finalizar e enviar e-mail'}
+        <button
+          type="button"
+          className="btn primary wide"
+          onClick={() => void handleFinish()}
+          disabled={sending || emailReady === false}
+        >
+          {sending ? 'Enviando…' : 'Finalizar e enviar pelo servidor'}
         </button>
       </div>
     </div>
-  );
+  )
 }

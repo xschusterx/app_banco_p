@@ -64,26 +64,12 @@ export function ReportDetailPage() {
     setSending(true)
     setFeedback('Reenviando e-mail…')
     try {
-      const result = await sendReportEmail(report)
-      if (result.via === 'api') {
-        setFeedback(
-          photos.length
-            ? `E-mail reenviado com ${photos.length} foto(s) anexada(s).`
-            : 'E-mail reenviado.',
-        )
-      } else if (result.via === 'share') {
-        setFeedback(
-          photos.length
-            ? 'No compartilhamento, escolha o app de e-mail para reenviar com as fotos.'
-            : 'Use o compartilhamento do aparelho para concluir o reenvio.',
-        )
-      } else {
-        setFeedback(
-          photos.length
-            ? 'App de e-mail aberto, mas mailto não anexa fotos — use compartilhar ou configure RESEND_API_KEY.'
-            : 'Abrimos o app de e-mail do aparelho para você concluir o reenvio.',
-        )
-      }
+      await sendReportEmail(report)
+      setFeedback(
+        photos.length
+          ? `E-mail reenviado com ${photos.length} foto(s) no corpo/anexo.`
+          : 'E-mail reenviado pelo servidor.',
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao reenviar.'
       setFeedback(message)
