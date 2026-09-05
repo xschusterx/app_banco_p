@@ -1,13 +1,14 @@
 # Instalar Task-Flux no celular
 
-## Instalador facial (use este link)
+## Host fixo (produção)
 
-- **Instalador:** https://quote-performances-recommendation-uses.trycloudflare.com/instalar.html
-- **APK direto:** https://quote-performances-recommendation-uses.trycloudflare.com/install.apk
-- Atalhos: `/instalar` e `/downloads` redirecionam para o instalador
+- **App / instalador:** https://task-flux-production.up.railway.app/instalar.html
+- **APK direto:** https://task-flux-production.up.railway.app/install.apk
+- **API health:** https://task-flux-production.up.railway.app/api/health
+- Atalhos: `/instalar` e `/downloads` → instalador
 - Local: http://localhost:8787/instalar.html
 
-> Túnel Cloudflare Quick Tunnel (demo). Se o link cair, reinicie `cloudflared` e atualize esta página — para produção veja [DEPLOY.md](./DEPLOY.md).
+> URL estável no Railway (`*.up.railway.app`). Detalhes em [DEPLOY.md](./DEPLOY.md).
 
 ## Android
 
@@ -20,9 +21,8 @@ Arquivo local: `release/task-flux-1.0.0.apk`
 
 ```bash
 cd checklist-app
-export VITE_EMAIL_API_URL=https://sua-api-publica.exemplo.com
-# Se APP_SEND_TOKEN estiver ativo no servidor:
-# export VITE_APP_SEND_TOKEN=mesmo-segredo
+export VITE_EMAIL_API_URL=https://task-flux-production.up.railway.app
+export VITE_APP_SEND_TOKEN='mesmo-segredo-do-APP_SEND_TOKEN'
 export ANDROID_HOME=$HOME/Android/Sdk
 npm run apk:android
 ```

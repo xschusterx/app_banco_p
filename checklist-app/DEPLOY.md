@@ -2,11 +2,21 @@
 
 O servidor Node (`server/index.mjs`) serve a API **e** o frontend (`dist/`), além de `/instalar.html` e `/install.apk`.
 
+## Host fixo atual
+
+- **URL:** https://task-flux-production.up.railway.app
+- **Instalador:** https://task-flux-production.up.railway.app/instalar.html
+- **APK:** https://task-flux-production.up.railway.app/install.apk
+- **Health:** https://task-flux-production.up.railway.app/api/health
+
+Projeto Railway: `task-flux` (serviço `task-flux`, ambiente `production`).
+
 ## O que você precisa fazer (fora do repositório)
 
 Estas etapas **não dá para fechar só no código**:
 
-1. **Hospedagem estável** — Railway, Render, Fly.io ou VPS com Docker (passos abaixo).
+1. **Hospedagem estável** — já publicada no Railway (URL acima). Alternativas: Render, Fly.io ou VPS com Docker.
+
 2. **Domínio + DNS na Resend** — para enviar e-mail para qualquer destinatário (não só a conta de teste):
    - Crie domínio em https://resend.com/domains
    - Adicione os registros DNS que a Resend mostrar (SPF/DKIM)
@@ -94,12 +104,17 @@ npm run apk:android
 
 ## Opção C — Render
 
+Arquivo pronto: `render.yaml` (Blueprint). No dashboard: **Blueprints** → conecte o repo → pasta `checklist-app`.
+
+Ou manualmente:
+
 1. New **Web Service** → repo → Root Directory `checklist-app`.
 2. Runtime: Docker **ou** Native:
    - Build: `npm ci && npm run build`
    - Start: `node server/index.mjs`
 3. Mesmas env vars da tabela.
 4. Health check path: `/api/health`.
+5. URL fixa: `https://….onrender.com` (plano free pode “dormir” após inatividade).
 
 ## Opção D — Fly.io
 
