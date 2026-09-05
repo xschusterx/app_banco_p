@@ -25,7 +25,9 @@ android/keystore/
 *.jks
 *.keystore
 *.aab
+*.apk
 !release/*.aab
+!release/*.apk
 
 # Editor directories and files
 .vscode/*

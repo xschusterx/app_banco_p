@@ -12,12 +12,17 @@
     "start": "npm run build && npm run server",
     "build:web": "tsc -b && vite build",
     "build:android": "npm run build && npx cap sync android",
-    "bundle:android": "npm run build:android && cd android && ./gradlew bundleRelease"
+    "build:ios": "npm run build && npx cap sync ios",
+    "build:mobile": "npm run build && npx cap sync",
+    "open:ios": "npx cap open ios",
+    "apk:android": "npm run build:android && cd android && ./gradlew assembleRelease && mkdir -p ../release ../dist/downloads && cp app/build/outputs/apk/release/app-release.apk ../release/task-flux-1.0.0.apk && cp ../release/task-flux-1.0.0.apk ../dist/downloads/task-flux-1.0.0.apk",
+    "bundle:android": "npm run build:android && cd android && ./gradlew bundleRelease && mkdir -p ../release && cp app/build/outputs/bundle/release/app-release.aab ../release/task-flux-1.0.0.aab"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1",
+    "@capacitor/ios": "^8.5.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",

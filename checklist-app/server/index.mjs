@@ -215,10 +215,43 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
   }
 })
 
+const releaseDir = join(rootDir, 'release')
+const downloadsDir = existsSync(releaseDir) ? releaseDir : join(rootDir, 'dist', 'downloads')
+
+app.get('/downloads', (_req, res) => {
+  const files = existsSync(downloadsDir)
+    ? [
+        existsSync(join(downloadsDir, 'task-flux-1.0.0.apk')) && 'task-flux-1.0.0.apk',
+        existsSync(join(downloadsDir, 'task-flux-ios-xcode-1.0.0.zip')) &&
+          'task-flux-ios-xcode-1.0.0.zip',
+      ].filter(Boolean)
+    : []
+  const links = files
+    .map((name) => `<li><a href="/downloads/${name}">${name}</a></li>`)
+    .join('\n')
+  res
+    .type('html')
+    .send(
+      `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Task-Flux downloads</title></head><body><h1>Task-Flux</h1><ul>${links || '<li>Nenhum pacote ainda.</li>'}</ul></body></html>`,
+    )
+})
+
+app.get('/downloads/:file', (req, res, next) => {
+  const allowed = new Set(['task-flux-1.0.0.apk', 'task-flux-ios-xcode-1.0.0.zip'])
+  const file = String(req.params.file || '')
+  if (!allowed.has(file)) return res.status(404).send('Not found')
+  const full = join(downloadsDir, file)
+  if (!existsSync(full)) return res.status(404).send('Not found')
+  if (file.endsWith('.apk')) {
+    res.type('application/vnd.android.package-archive')
+  }
+  return res.download(full, file, (err) => (err ? next(err) : undefined))
+})
+
 const distDir = join(rootDir, 'dist')
 if (existsSync(distDir)) {
   app.use(express.static(distDir))
-  app.get(/^(?!\/api).*/, (_req, res) => {
+  app.get(/^(?!\/api)(?!\/downloads).*/, (_req, res) => {
     res.sendFile(join(distDir, 'index.html'))
   })
 } else {
