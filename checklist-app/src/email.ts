@@ -4,8 +4,9 @@ import { normalizePhotoUrls } from './photos'
 const API_BASE = (import.meta.env.VITE_EMAIL_API_URL as string | undefined)?.replace(/\/$/, '') || ''
 const APP_TOKEN = (import.meta.env.VITE_APP_SEND_TOKEN as string | undefined) || ''
 
-export function buildEmailBody(report: ChecklistReport): string {
+export function buildEmailBody(report: ChecklistReport, opts?: { claimPhotosAttached?: boolean }): string {
   const photos = normalizePhotoUrls(report)
+  const claimPhotos = opts?.claimPhotosAttached ?? false
   const lines: string[] = []
   lines.push(`Checklist: ${report.title}`)
   if (report.location) lines.push(`Veículo / placa: ${report.location}`)
@@ -20,11 +21,19 @@ export function buildEmailBody(report: ChecklistReport): string {
   lines.push(report.observations.trim() || '(sem observações)')
   if (photos.length) {
     lines.push('')
-    lines.push(
-      photos.length === 1
-        ? 'Foto: anexada no e-mail (ou compartilhada pelo aparelho).'
-        : `${photos.length} fotos: anexadas no e-mail (ou compartilhadas pelo aparelho).`,
-    )
+    if (claimPhotos) {
+      lines.push(
+        photos.length === 1
+          ? 'Foto: anexada neste e-mail.'
+          : `${photos.length} fotos: anexadas neste e-mail.`,
+      )
+    } else {
+      lines.push(
+        photos.length === 1
+          ? 'Foto: salva no Task-Flux (abra o compartilhamento do aparelho para anexá-la).'
+          : `${photos.length} fotos: salvas no Task-Flux (abra o compartilhamento do aparelho para anexá-las).`,
+      )
+    }
   }
   lines.push('')
   lines.push('— Enviado pelo Task-Flux')
@@ -65,9 +74,19 @@ async function dataUrlToFile(dataUrl: string, index: number): Promise<File> {
   })
 }
 
+function canShareFiles(files: File[]): boolean {
+  if (!navigator.share || !navigator.canShare) return false
+  try {
+    return navigator.canShare({ files })
+  } catch {
+    return false
+  }
+}
+
 /**
- * Fallback sem Resend: tenta compartilhar COM as fotos.
- * mailto: não anexa imagem — por isso preferimos share quando há fotos.
+ * Com fotos: só compartilha se os ARQUIVOS forem incluídos.
+ * mailto NÃO anexa imagem — por isso não usamos mailto quando há fotos.
+ * No iOS, enviamos as fotos + um .txt do relatório como arquivos (Mail anexa de verdade).
  */
 export async function shareReport(options: {
   emails: string[]
@@ -76,24 +95,55 @@ export async function shareReport(options: {
   photoDataUrls: string[]
 }): Promise<'shared' | 'mailto'> {
   const { emails, subject, body, photoDataUrls } = options
+  const hasPhotos = photoDataUrls.length > 0
 
+  if (hasPhotos) {
+    if (!navigator.share || !navigator.canShare) {
+      throw new Error(
+        'Este navegador não compartilha arquivos. No iPhone, abra pelo Safari e toque em Finalizar de novo, ou configure RESEND_API_KEY no servidor.',
+      )
+    }
+
+    const photoFiles = await Promise.all(photoDataUrls.map((url, i) => dataUrlToFile(url, i)))
+    const reportText = `${body}\n\nPara: ${emails.join(', ')}\n`
+    const reportFile = new File([reportText], 'checklist-relatorio.txt', {
+      type: 'text/plain',
+    })
+
+    const filesWithReport = [...photoFiles, reportFile]
+    const filesOnlyPhotos = photoFiles
+
+    const pack = canShareFiles(filesWithReport)
+      ? filesWithReport
+      : canShareFiles(filesOnlyPhotos)
+        ? filesOnlyPhotos
+        : null
+
+    if (!pack) {
+      throw new Error(
+        'Não foi possível anexar as fotos neste aparelho. Configure RESEND_API_KEY no servidor (EMAIL.md) para o e-mail sair com as fotos.',
+      )
+    }
+
+    try {
+      // Só arquivos: no iOS isso abre o sheet e o Mail recebe os anexos.
+      await navigator.share({ files: pack, title: subject })
+      return 'shared'
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return 'shared'
+      throw new Error(
+        'Compartilhamento cancelado ou sem suporte a anexos. Toque em Finalizar e escolha Mail no menu Compartilhar (as fotos precisam ir como arquivo).',
+      )
+    }
+  }
+
+  // Sem fotos: share de texto ou mailto estão ok.
   if (navigator.share) {
     try {
-      const data: ShareData = {
+      await navigator.share({
         title: subject,
         text: `${body}\n\nPara: ${emails.join(', ')}`,
-      }
-
-      if (photoDataUrls.length && navigator.canShare) {
-        const files = await Promise.all(photoDataUrls.map((url, i) => dataUrlToFile(url, i)))
-        const withFiles = { ...data, files }
-        if (navigator.canShare(withFiles)) {
-          await navigator.share(withFiles)
-          return 'shared'
-        }
-      }
-
-      await navigator.share(data)
+      })
       return 'shared'
     } catch (error) {
       if ((error as Error).name === 'AbortError') return 'shared'
@@ -107,7 +157,8 @@ export async function shareReport(options: {
 async function sendViaDevice(report: ChecklistReport): Promise<SendEmailResult> {
   const photos = normalizePhotoUrls(report)
   const subject = `Checklist: ${report.title}`
-  const body = buildEmailBody(report)
+  // Nunca afirmar que fotos foram anexadas no caminho mailto/texto.
+  const body = buildEmailBody(report, { claimPhotosAttached: false })
   const deviceVia = await shareReport({
     emails: report.sentTo,
     subject,
@@ -144,7 +195,6 @@ export async function sendReportEmail(report: ChecklistReport): Promise<SendEmai
         observations: report.observations,
         createdAt: report.createdAt,
         photoDataUrls: photos,
-        // compatível com API antiga
         photoDataUrl: photos[0] ?? null,
       }),
     })

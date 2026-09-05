@@ -82,7 +82,16 @@ export function buildHtmlEmail(report) {
                       Number(report.photoCount) > 1
                         ? `${Number(report.photoCount)} fotos do checklist estão anexadas a este e-mail.`
                         : 'A foto do checklist está anexada a este e-mail.'
-                    }</p>`
+                    }</p>${
+                      Array.isArray(report.inlinePhotoCids) && report.inlinePhotoCids.length
+                        ? `<div style="margin-top:14px;">${report.inlinePhotoCids
+                            .map(
+                              (cid, i) =>
+                                `<img src="cid:${cid}" alt="Foto ${i + 1}" style="display:block;width:100%;max-width:480px;height:auto;border-radius:8px;margin:0 0 10px;" />`,
+                            )
+                            .join('')}</div>`
+                        : ''
+                    }`
                   : ''
               }
             </td>

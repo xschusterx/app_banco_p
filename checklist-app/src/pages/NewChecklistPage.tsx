@@ -101,7 +101,7 @@ export function NewChecklistPage() {
       } else if (result.via === 'share') {
         setFeedback(
           photoDataUrls.length
-            ? 'Checklist salvo. No compartilhamento, escolha o app de e-mail para enviar com as fotos.'
+            ? 'Checklist salvo. No menu Compartilhar, escolha Mail — as fotos vão como anexo. Não use só o app de e-mail sem anexos.'
             : 'Checklist salvo. Use o compartilhamento do aparelho para concluir o envio.',
         );
       } else {

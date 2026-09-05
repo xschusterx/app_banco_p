@@ -182,11 +182,18 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
     if (photos.length) {
       payload.attachments = photos.map((photo, index) => {
         const ext = photo.contentType.includes('png') ? 'png' : 'jpg'
+        const contentId = `foto-${index + 1}@task-flux`
         return {
           filename: `checklist-foto-${index + 1}.${ext}`,
           content: photo.content,
           contentType: photo.contentType,
+          contentId,
         }
+      })
+      // HTML com imagens inline (além dos anexos) para o destinatário ver as fotos no corpo.
+      payload.html = buildHtmlEmail({
+        ...report,
+        inlinePhotoCids: payload.attachments.map((a) => a.contentId),
       })
     }
 
