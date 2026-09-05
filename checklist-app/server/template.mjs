@@ -141,7 +141,6 @@ export function buildHtmlEmail(report) {
             <td style="background:linear-gradient(135deg,#143528 0%,#1b6b4a 100%);padding:26px 28px 22px;">
               <div style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#b7e0cb;font-weight:600;">Task-Flux</div>
               <div style="margin-top:8px;font-size:24px;line-height:1.25;font-weight:700;color:#ffffff;">${escapeHtml(report.title || 'Checklist')}</div>
-              <div style="margin-top:8px;font-size:13px;color:#d7eee2;">Relatório enviado automaticamente — sem abrir o e-mail do aparelho</div>
             </td>
           </tr>
 
