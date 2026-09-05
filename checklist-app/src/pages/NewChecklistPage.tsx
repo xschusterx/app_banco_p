@@ -35,6 +35,10 @@ export function NewChecklistPage() {
     setNewItem('');
   }
 
+  function removeItem(id: string) {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  }
+
   function toggleContact(id: string) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
@@ -122,18 +126,31 @@ export function NewChecklistPage() {
       <section className="form-block">
         <div className="section-head">
           <h2>Itens do checklist</h2>
-          <p>Base para veículos: farol, pneus, para-brisa e lataria. Inclua o que mais quiser conferir.</p>
+          <p>Base para veículos: farol, pneus, para-brisa e lataria. Inclua ou remova o que quiser conferir.</p>
         </div>
-        <ul className="check-list">
-          {items.map((item) => (
-            <li key={item.id}>
-              <label className={`check-row ${item.done ? 'done' : ''}`}>
-                <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
-                <span>{item.label}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
+        {items.length === 0 ? (
+          <p className="hint">Nenhum item na lista. Adicione abaixo o que deseja conferir.</p>
+        ) : (
+          <ul className="check-list">
+            {items.map((item) => (
+              <li key={item.id} className="check-item">
+                <label className={`check-row ${item.done ? 'done' : ''}`}>
+                  <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
+                  <span>{item.label}</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn-remove-item"
+                  onClick={() => removeItem(item.id)}
+                  aria-label={`Remover item ${item.label}`}
+                  title="Remover item"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <form className="inline-add" onSubmit={addItem}>
           <input
             value={newItem}

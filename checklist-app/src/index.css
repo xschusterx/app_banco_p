@@ -632,6 +632,17 @@ textarea {
   margin-top: 0.45rem;
 }
 
+.check-item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.check-item .check-row {
+  flex: 1;
+  min-width: 0;
+}
+
 .check-row {
   display: flex;
   gap: 0.75rem;
@@ -654,6 +665,26 @@ textarea {
 
 .check-row.done span:last-child {
   text-decoration: line-through;
+}
+
+.btn-remove-item {
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  min-width: 2.5rem;
+  padding: 0 0.65rem;
+  background: var(--fog);
+  color: var(--danger);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.btn-remove-item:hover {
+  background: rgba(179, 58, 45, 0.12);
+  transform: translateY(-1px);
 }
 
 .check-list.readonly .check-row {
