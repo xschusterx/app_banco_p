@@ -1,22 +1,28 @@
 # Publicar Task-Flux na Google Play Store
 
 O app web foi empacotado com **Capacitor** e gerado como **Android App Bundle (`.aab`)**.
+Para sideload no celular use o **APK** (veja [INSTALL.md](./INSTALL.md)).
 
-## Arquivo gerado
+## Arquivos gerados
 
-- `checklist-app/release/task-flux-1.0.0.aab`
-- Também em: `android/app/build/outputs/bundle/release/app-release.aab`
+- APK (sideload): `checklist-app/release/task-flux-1.0.0.apk`
+- AAB (Play Store): `checklist-app/release/task-flux-1.0.0.aab`
+- Também em: `android/app/build/outputs/apk/release/app-release.apk` e `.../bundle/release/app-release.aab`
 
 - Pacote Android: `com.taskflux.app`
 - Versão: `1.0.0` (`versionCode` 1)
 - Nome do app: **Task-Flux**
 
-## Gerar o AAB de novo
+## Gerar APK (sideload) ou AAB de novo
 
 ```bash
 cd checklist-app
 npm install
-npm run bundle:android
+export VITE_EMAIL_API_URL=https://sua-api-publica.exemplo.com
+export ANDROID_HOME=$HOME/Android/Sdk
+npm run apk:android      # → release/task-flux-1.0.0.apk
+# ou
+npm run bundle:android   # → release/task-flux-1.0.0.aab
 ```
 
 ## Assinatura (keystore)
