@@ -99,7 +99,8 @@ export function NewChecklistPage() {
       } else {
         setFeedback('Checklist salvo. Abrimos o app de e-mail do aparelho para você concluir o envio.');
       }
-      setTimeout(() => navigate(`/historico/${report.id}`), 600);
+      setSending(false);
+      setTimeout(() => navigate(`/historico/${report.id}`), 900);
     } catch (error) {
       saveReport(report);
       const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';

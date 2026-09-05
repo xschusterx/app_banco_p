@@ -39,7 +39,14 @@ function isEmailNotConfiguredError(status: number, message: string): boolean {
 
 export function openMailto(emails: string[], subject: string, body: string): void {
   const url = `mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  window.location.href = url
+  // Prefer anchor click so the SPA stays on the page and feedback can show.
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.rel = 'noopener'
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
 }
 
 /** Fallback quando a API Resend não está configurada: compartilha ou abre o app de e-mail. */
