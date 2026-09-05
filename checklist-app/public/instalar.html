@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b3a2f" />
+    <meta name="description" content="Instale o Task-Flux no celular em poucos toques." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Task-Flux" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>Instalar Task-Flux</title>
+    <style>
+      :root {
+        --ink: #14241d;
+        --ink-soft: rgba(20, 36, 29, 0.72);
+        --moss: #1b3a2f;
+        --moss-mid: #2f5a48;
+        --leaf: #4f8b6e;
+        --amber: #e0a41a;
+        --on-strong: #f4faf6;
+        --line: rgba(20, 36, 29, 0.12);
+        --font-display: 'Syne', sans-serif;
+        --font-body: 'Figtree', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--ink);
+        background:
+          radial-gradient(1100px 640px at 8% -12%, rgba(79, 139, 110, 0.28), transparent 55%),
+          radial-gradient(900px 520px at 100% 0%, rgba(224, 164, 26, 0.16), transparent 48%),
+          linear-gradient(165deg, #eef4ef 0%, #e4ece6 42%, #d9e5dc 100%);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .shell {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem 1.25rem 2.5rem;
+      }
+
+      .stage {
+        width: min(100%, 28rem);
+        position: relative;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-bottom: 1.75rem;
+        opacity: 0;
+        animation: rise 0.7s ease forwards;
+      }
+
+      .mark {
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 0.95rem;
+        background: var(--moss);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        box-shadow: 0 14px 34px rgba(27, 58, 47, 0.28);
+      }
+
+      .mark svg {
+        width: 1.7rem;
+        height: 1.7rem;
+      }
+
+      .brand-name {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: clamp(1.85rem, 7vw, 2.35rem);
+        letter-spacing: -0.04em;
+        line-height: 1;
+        margin: 0;
+      }
+
+      .headline {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: clamp(1.55rem, 5.8vw, 2rem);
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin: 0 0 0.65rem;
+        opacity: 0;
+        animation: rise 0.7s ease 0.08s forwards;
+      }
+
+      .lede {
+        margin: 0 0 1.75rem;
+        color: var(--ink-soft);
+        font-size: 1.05rem;
+        line-height: 1.45;
+        max-width: 22rem;
+        opacity: 0;
+        animation: rise 0.7s ease 0.14s forwards;
+      }
+
+      .phone {
+        position: relative;
+        margin: 0 auto 1.75rem;
+        width: min(100%, 17.5rem);
+        aspect-ratio: 9 / 16;
+        border-radius: 2rem;
+        background:
+          linear-gradient(160deg, rgba(251, 252, 251, 0.55), rgba(231, 238, 232, 0.35)),
+          linear-gradient(180deg, #1b3a2f 0%, #2f5a48 55%, #4f8b6e 100%);
+        box-shadow:
+          0 28px 60px rgba(20, 36, 29, 0.22),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+        opacity: 0;
+        animation: rise 0.85s ease 0.18s forwards, float 5.5s ease-in-out 1s infinite;
+      }
+
+      .phone::before {
+        content: '';
+        position: absolute;
+        inset: 0.7rem;
+        border-radius: 1.45rem;
+        background:
+          radial-gradient(circle at 70% 18%, rgba(224, 164, 26, 0.35), transparent 42%),
+          linear-gradient(180deg, rgba(244, 250, 246, 0.12), transparent 40%),
+          #14241d;
+      }
+
+      .phone-screen {
+        position: absolute;
+        inset: 1.35rem 1.1rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 0.55rem;
+        color: var(--on-strong);
+        z-index: 1;
+      }
+
+      .phone-screen strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        letter-spacing: -0.03em;
+      }
+
+      .phone-screen span {
+        opacity: 0.78;
+        font-size: 0.92rem;
+        line-height: 1.35;
+      }
+
+      .notch {
+        position: absolute;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4.5rem;
+        height: 0.55rem;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 2;
+      }
+
+      .actions {
+        display: grid;
+        gap: 0.75rem;
+        opacity: 0;
+        animation: rise 0.7s ease 0.28s forwards;
+      }
+
+      .btn {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        min-height: 3.15rem;
+        padding: 0.85rem 1.2rem;
+        border-radius: 999px;
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-size: 1rem;
+        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary {
+        background: var(--moss);
+        color: var(--on-strong);
+        box-shadow: 0 16px 34px rgba(27, 58, 47, 0.28);
+      }
+
+      .btn-primary:hover {
+        background: var(--moss-mid);
+      }
+
+      .btn-secondary {
+        background: rgba(251, 252, 251, 0.72);
+        color: var(--moss);
+        border: 1px solid var(--line);
+        backdrop-filter: blur(8px);
+      }
+
+      .hint {
+        margin: 1rem 0 0;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+        line-height: 1.45;
+        opacity: 0;
+        animation: rise 0.7s ease 0.36s forwards;
+      }
+
+      .hint ol {
+        margin: 0.55rem 0 0;
+        padding-left: 1.15rem;
+      }
+
+      .hint li + li {
+        margin-top: 0.3rem;
+      }
+
+      .alt {
+        margin-top: 1.5rem;
+        padding-top: 1.15rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+        opacity: 0;
+        animation: rise 0.7s ease 0.42s forwards;
+      }
+
+      .alt a {
+        color: var(--moss);
+        font-weight: 600;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .brand,
+        .headline,
+        .lede,
+        .phone,
+        .actions,
+        .hint,
+        .alt {
+          animation: none;
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="stage">
+        <header class="brand" aria-label="Task-Flux">
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M18 34l8 8 20-22"
+                stroke="#E8F0EA"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="46" cy="18" r="6" fill="#F0B429" />
+            </svg>
+          </div>
+          <h1 class="brand-name">Task-Flux</h1>
+        </header>
+
+        <h2 class="headline" id="headline">Instale no seu celular</h2>
+        <p class="lede" id="lede">Checklist com foto e e-mail automático — no aparelho, em poucos toques.</p>
+
+        <div class="phone" aria-hidden="true">
+          <div class="notch"></div>
+          <div class="phone-screen">
+            <strong>Pronto para campo</strong>
+            <span>Fotos, ditado e envio do relatório sem abrir o e-mail pessoal.</span>
+          </div>
+        </div>
+
+        <div class="actions" id="actions"></div>
+        <div class="hint" id="hint"></div>
+        <p class="alt" id="alt"></p>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var ua = navigator.userAgent || '';
+        var isIOS =
+          /iPhone|iPad|iPod/i.test(ua) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isAndroid = /Android/i.test(ua);
+
+        var actions = document.getElementById('actions');
+        var hint = document.getElementById('hint');
+        var alt = document.getElementById('alt');
+        var headline = document.getElementById('headline');
+        var lede = document.getElementById('lede');
+
+        var apk = '/downloads/task-flux-1.0.0.apk';
+        var appHome = './';
+        var iosZip = '/downloads/task-flux-ios-xcode-1.0.0.zip';
+
+        function btn(href, label, primary, attrs) {
+          var a = document.createElement('a');
+          a.className = 'btn ' + (primary ? 'btn-primary' : 'btn-secondary');
+          a.href = href;
+          a.textContent = label;
+          if (attrs) {
+            Object.keys(attrs).forEach(function (k) {
+              a.setAttribute(k, attrs[k]);
+            });
+          }
+          return a;
+        }
+
+        if (isAndroid) {
+          headline.textContent = 'Instalar no Android';
+          lede.textContent = 'Baixe o APK e permita a instalação deste app.';
+          actions.appendChild(btn(apk, 'Baixar e instalar APK', true, { download: 'task-flux-1.0.0.apk' }));
+          actions.appendChild(btn(appHome, 'Abrir no navegador', false));
+          hint.innerHTML =
+            '<ol>' +
+            '<li>Toque em <strong>Baixar e instalar APK</strong>.</li>' +
+            '<li>Se pedir, permita instalar de fontes desconhecidas.</li>' +
+            '<li>Abra o arquivo baixado e confirme.</li>' +
+            '</ol>';
+          alt.innerHTML = 'Também no iPhone? Abra esta página no Safari.';
+        } else if (isIOS) {
+          headline.textContent = 'Instalar no iPhone';
+          lede.textContent = 'No Safari, adicione o Task-Flux à Tela de Início.';
+          actions.appendChild(btn(appHome, 'Abrir o app', true));
+          hint.innerHTML =
+            '<ol>' +
+            '<li>Toque em <strong>Abrir o app</strong> (use o Safari).</li>' +
+            '<li>Toque em <strong>Compartilhar</strong>.</li>' +
+            '<li>Escolha <strong>Adicionar à Tela de Início</strong>.</li>' +
+            '</ol>';
+          alt.innerHTML =
+            'Tem Mac e quer o app nativo? <a href="' + iosZip + '">Baixar projeto Xcode</a>.';
+        } else {
+          headline.textContent = 'Instalador Task-Flux';
+          lede.textContent = 'Escolha o aparelho. No celular, esta página já mostra o caminho certo.';
+          actions.appendChild(btn(apk, 'Baixar APK Android', true, { download: 'task-flux-1.0.0.apk' }));
+          actions.appendChild(btn(appHome, 'Abrir app (web / iPhone)', false));
+          hint.innerHTML =
+            '<p><strong>Android:</strong> baixe o APK e permita fontes desconhecidas.</p>' +
+            '<p><strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.</p>';
+          alt.innerHTML =
+            'Desenvolvedor iOS: <a href="' +
+            iosZip +
+            '">projeto Xcode (.zip)</a>';
+        }
+      })();
+    </script>
+  </body>
+</html>

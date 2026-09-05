@@ -32,7 +32,9 @@ npm run dev      # terminal 2 — Vite
 
 ## Instalar no celular
 
-Guia rápido: [INSTALL.md](./INSTALL.md)
+Abra o **instalador facial** (detecta Android/iPhone): `/instalar.html`
+
+Guia: [INSTALL.md](./INSTALL.md)
 
 ### Android (APK / Play Store)
 
