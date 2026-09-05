@@ -5,7 +5,7 @@ import { ContactPicker } from '../components/ContactPicker';
 import { ObservationsField } from '../components/ObservationsField';
 import { PhotoCapture } from '../components/PhotoCapture';
 import { buildEmailBody, createItems, shareReport } from '../email';
-import { loadData, saveReport, uid, upsertContact } from '../storage';
+import { loadData, saveReport, uid } from '../storage';
 import type { ChecklistItem, ChecklistReport } from '../types';
 
 export function NewChecklistPage() {
@@ -17,10 +17,8 @@ export function NewChecklistPage() {
   const [newItem, setNewItem] = useState('');
   const [observations, setObservations] = useState('');
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [customEmail, setCustomEmail] = useState('');
-  const [saveCustomAsContact, setSaveCustomAsContact] = useState(true);
-  const [customContactName, setCustomContactName] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   function toggleItem(id: string) {
@@ -39,19 +37,20 @@ export function NewChecklistPage() {
     setItems((prev) => prev.filter((item) => item.id !== id));
   }
 
-  function toggleContact(id: string) {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  function toggleGroup(id: string) {
+    setSelectedGroupIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }
 
   function collectEmails(): string[] {
-    const fromContacts = initial.contacts
-      .filter((c) => selectedIds.includes(c.id))
-      .map((c) => c.email.trim())
-      .filter(Boolean);
+    const fromGroups = initial.groups
+      .filter((g) => selectedGroupIds.includes(g.id))
+      .flatMap((g) => g.emails);
     const extra = customEmail.trim();
-    const all = [...fromContacts];
+    const all = [...fromGroups];
     if (extra) all.push(extra);
-    return Array.from(new Set(all.map((e) => e.toLowerCase())));
+    return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))));
   }
 
   function handleFinish() {
@@ -61,16 +60,8 @@ export function NewChecklistPage() {
       return;
     }
     if (!emails.length) {
-      setFeedback('Selecione um contato ou digite um e-mail para enviar.');
+      setFeedback('Selecione um grupo ou digite um e-mail para enviar.');
       return;
-    }
-
-    if (customEmail.trim() && saveCustomAsContact) {
-      upsertContact({
-        id: uid(),
-        name: customContactName.trim() || customEmail.trim().split('@')[0],
-        email: customEmail.trim().toLowerCase(),
-      });
     }
 
     const report: ChecklistReport = {
@@ -156,7 +147,7 @@ export function NewChecklistPage() {
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             placeholder="O que mais quer conferir? Ex.: freios, óleo…"
-            aria-label="Novo item do checklist de veículo"
+            aria-label="Novo item do checklist"
           />
           <button type="submit" className="btn ghost">
             Adicionar
@@ -168,35 +159,12 @@ export function NewChecklistPage() {
       <ObservationsField value={observations} onChange={setObservations} />
 
       <ContactPicker
-        contacts={initial.contacts}
-        selectedIds={selectedIds}
-        onToggle={toggleContact}
+        groups={initial.groups}
+        selectedGroupIds={selectedGroupIds}
+        onToggleGroup={toggleGroup}
         customEmail={customEmail}
         onCustomEmailChange={setCustomEmail}
       />
-
-      {customEmail.trim() ? (
-        <div className="save-contact-box">
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={saveCustomAsContact}
-              onChange={(e) => setSaveCustomAsContact(e.target.checked)}
-            />
-            <span>Salvar este e-mail nos contatos para próximos checklists</span>
-          </label>
-          {saveCustomAsContact ? (
-            <label className="field">
-              <span>Nome do contato</span>
-              <input
-                value={customContactName}
-                onChange={(e) => setCustomContactName(e.target.value)}
-                placeholder="Ex.: Supervisão / Cliente"
-              />
-            </label>
-          ) : null}
-        </div>
-      ) : null}
 
       {feedback ? <p className="feedback">{feedback}</p> : null}
 

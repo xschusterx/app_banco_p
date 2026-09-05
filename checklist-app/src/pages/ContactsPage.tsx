@@ -1,79 +1,95 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { deleteContact, loadData, uid, upsertContact } from '../storage';
-import type { Contact } from '../types';
+import { deleteGroup, loadData, uid, upsertGroup } from '../storage';
+import type { ContactGroup } from '../types';
+
+function parseEmails(raw: string): string[] {
+  return raw
+    .split(/[\n,;]+/)
+    .map((e) => e.trim().toLowerCase())
+    .filter((e) => e.includes('@'));
+}
 
 export function ContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>(() => loadData().contacts);
+  const [groups, setGroups] = useState<ContactGroup[]>(() => loadData().groups);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [emailsText, setEmailsText] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   function resetForm() {
     setName('');
-    setEmail('');
+    setEmailsText('');
     setEditingId(null);
   }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanName || !cleanEmail || !cleanEmail.includes('@')) {
-      setMessage('Informe nome e um e-mail válido.');
+    const emails = parseEmails(emailsText);
+    if (!cleanName) {
+      setMessage('Informe o nome do grupo.');
+      return;
+    }
+    if (!emails.length) {
+      setMessage('Informe pelo menos um e-mail válido.');
       return;
     }
 
-    const contact: Contact = {
+    const group: ContactGroup = {
       id: editingId ?? uid(),
       name: cleanName,
-      email: cleanEmail,
+      emails,
     };
-    const data = upsertContact(contact);
-    setContacts(data.contacts);
-    setMessage(editingId ? 'Contato atualizado.' : 'Contato salvo para próximos envios.');
+    const data = upsertGroup(group);
+    setGroups(data.groups);
+    setMessage(editingId ? 'Grupo atualizado.' : 'Grupo salvo para próximos envios.');
     resetForm();
   }
 
-  function startEdit(contact: Contact) {
-    setEditingId(contact.id);
-    setName(contact.name);
-    setEmail(contact.email);
+  function startEdit(group: ContactGroup) {
+    setEditingId(group.id);
+    setName(group.name);
+    setEmailsText(group.emails.join('\n'));
     setMessage(null);
   }
 
   function remove(id: string) {
-    const data = deleteContact(id);
-    setContacts(data.contacts);
+    const data = deleteGroup(id);
+    setGroups(data.groups);
     if (editingId === id) resetForm();
-    setMessage('Contato removido.');
+    setMessage('Grupo removido.');
   }
 
   return (
     <div className="page">
       <header className="page-intro">
-        <h1>Contatos de e-mail</h1>
-        <p>Cadastre destinatários para reutilizar ao finalizar outros checklists.</p>
+        <h1>Grupos de e-mail</h1>
+        <p>Cadastre grupos com vários destinatários e selecione o grupo ao finalizar o checklist.</p>
       </header>
 
       <form className="form-block contact-form" onSubmit={handleSubmit}>
         <label className="field">
-          <span>Nome</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Eng. Carla" />
+          <span>Nome do grupo</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex.: Supervisão / Oficina / Cliente"
+          />
         </label>
         <label className="field">
-          <span>E-mail</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="carla@empresa.com"
+          <span>E-mails do grupo</span>
+          <textarea
+            className="textarea"
+            rows={4}
+            value={emailsText}
+            onChange={(e) => setEmailsText(e.target.value)}
+            placeholder={'Um e-mail por linha, ou separados por vírgula\ncarla@empresa.com\njoao@empresa.com'}
           />
         </label>
         <div className="row-actions">
           <button type="submit" className="btn primary">
-            {editingId ? 'Salvar alteração' : 'Adicionar contato'}
+            {editingId ? 'Salvar grupo' : 'Adicionar grupo'}
           </button>
           {editingId ? (
             <button type="button" className="btn ghost" onClick={resetForm}>
@@ -87,21 +103,22 @@ export function ContactsPage() {
 
       <section className="form-block">
         <div className="section-head">
-          <h2>Salvos neste aparelho</h2>
-          <p>{contacts.length ? `${contacts.length} contato(s)` : 'Nenhum contato cadastrado.'}</p>
+          <h2>Grupos salvos neste aparelho</h2>
+          <p>{groups.length ? `${groups.length} grupo(s)` : 'Nenhum grupo cadastrado.'}</p>
         </div>
-        <ul className="contact-list">
-          {contacts.map((contact) => (
-            <li key={contact.id}>
+        <ul className="contact-list group-list">
+          {groups.map((group) => (
+            <li key={group.id}>
               <div>
-                <strong>{contact.name}</strong>
-                <span>{contact.email}</span>
+                <strong>{group.name}</strong>
+                <span>{group.emails.length} e-mail(s)</span>
+                <em className="group-emails">{group.emails.join(', ')}</em>
               </div>
               <div className="row-actions">
-                <button type="button" className="btn ghost" onClick={() => startEdit(contact)}>
+                <button type="button" className="btn ghost" onClick={() => startEdit(group)}>
                   Editar
                 </button>
-                <button type="button" className="btn ghost danger" onClick={() => remove(contact.id)}>
+                <button type="button" className="btn ghost danger" onClick={() => remove(group.id)}>
                   Excluir
                 </button>
               </div>

@@ -1,17 +1,17 @@
-import type { Contact } from '../types';
+import type { ContactGroup } from '../types';
 
 type Props = {
-  contacts: Contact[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
+  groups: ContactGroup[];
+  selectedGroupIds: string[];
+  onToggleGroup: (id: string) => void;
   customEmail: string;
   onCustomEmailChange: (value: string) => void;
 };
 
 export function ContactPicker({
-  contacts,
-  selectedIds,
-  onToggle,
+  groups,
+  selectedGroupIds,
+  onToggleGroup,
   customEmail,
   onCustomEmailChange,
 }: Props) {
@@ -19,26 +19,30 @@ export function ContactPicker({
     <section className="send-block">
       <div className="section-head">
         <h2>Enviar por e-mail</h2>
-        <p>Escolha contatos salvos ou digite um e-mail novo para este envio.</p>
+        <p>Selecione um ou mais grupos salvos, ou digite um e-mail avulso para este envio.</p>
       </div>
 
-      {contacts.length === 0 ? (
-        <p className="hint">Nenhum contato salvo ainda. Digite um e-mail abaixo ou cadastre em Contatos.</p>
+      {groups.length === 0 ? (
+        <p className="hint">
+          Nenhum grupo salvo ainda. Cadastre em Contatos ou digite um e-mail abaixo.
+        </p>
       ) : (
         <ul className="contact-pick-list">
-          {contacts.map((contact) => {
-            const checked = selectedIds.includes(contact.id);
+          {groups.map((group) => {
+            const checked = selectedGroupIds.includes(group.id);
             return (
-              <li key={contact.id}>
+              <li key={group.id}>
                 <label className={`contact-pick ${checked ? 'active' : ''}`}>
                   <input
                     type="checkbox"
                     checked={checked}
-                    onChange={() => onToggle(contact.id)}
+                    onChange={() => onToggleGroup(group.id)}
                   />
                   <span>
-                    <strong>{contact.name}</strong>
-                    <em>{contact.email}</em>
+                    <strong>{group.name}</strong>
+                    <em className="group-emails">
+                      {group.emails.length} e-mail(s): {group.emails.join(', ')}
+                    </em>
                   </span>
                 </label>
               </li>

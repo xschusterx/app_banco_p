@@ -10,6 +10,13 @@ export type Contact = {
   email: string;
 };
 
+/** Grupo com vários e-mails para envio em lote do checklist. */
+export type ContactGroup = {
+  id: string;
+  name: string;
+  emails: string[];
+};
+
 export type ChecklistReport = {
   id: string;
   title: string;
@@ -23,6 +30,7 @@ export type ChecklistReport = {
 
 export type AppData = {
   contacts: Contact[];
+  groups: ContactGroup[];
   reports: ChecklistReport[];
   defaultItems: string[];
 };

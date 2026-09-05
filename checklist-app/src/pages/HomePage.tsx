@@ -20,7 +20,7 @@ export function HomePage() {
               Começar checklist
             </Link>
             <Link className="btn ghost light" to="/contatos">
-              Gerenciar contatos
+              Gerenciar grupos
             </Link>
           </div>
         </div>

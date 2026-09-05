@@ -16,7 +16,7 @@ export function Layout() {
               Início
             </NavLink>
             <NavLink to="/novo">Novo</NavLink>
-            <NavLink to="/contatos">Contatos</NavLink>
+            <NavLink to="/contatos">Grupos</NavLink>
             <NavLink to="/historico">Histórico</NavLink>
           </nav>
         </div>
