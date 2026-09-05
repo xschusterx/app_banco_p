@@ -1,0 +1,21 @@
+# Blueprint Render — one-click deploy (host HTTPS fixo *.onrender.com)
+# https://dashboard.render.com/blueprints
+services:
+  - type: web
+    name: task-flux
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        sync: false
+      - key: APP_SEND_TOKEN
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

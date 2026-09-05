@@ -2,11 +2,21 @@
 
 O servidor Node (`server/index.mjs`) serve a API **e** o frontend (`dist/`), além de `/instalar.html` e `/install.apk`.
 
+## Host fixo atual
+
+- **URL:** https://task-flux-production.up.railway.app
+- **Instalador:** https://task-flux-production.up.railway.app/instalar.html
+- **APK:** https://task-flux-production.up.railway.app/install.apk
+- **Health:** https://task-flux-production.up.railway.app/api/health
+
+Projeto Railway: `task-flux` (serviço `task-flux`, ambiente `production`).
+
 ## O que você precisa fazer (fora do repositório)
 
 Estas etapas **não dá para fechar só no código**:
 
-1. **Hospedagem estável** — Railway, Render, Fly.io ou VPS com Docker (passos abaixo).
+1. **Hospedagem estável** — já publicada no Railway (URL acima). Alternativas: Render, Fly.io ou VPS com Docker.
+
 2. **Domínio + DNS na Resend** — para enviar e-mail para qualquer destinatário (não só a conta de teste):
    - Crie domínio em https://resend.com/domains
    - Adicione os registros DNS que a Resend mostrar (SPF/DKIM)
@@ -51,13 +61,36 @@ Health: `GET https://seu-host/api/health` → `"emailConfigured": true`.
 
 Instalador: `https://seu-host/instalar.html` · APK: `https://seu-host/install.apk`
 
-## Opção B — Railway
+## Opção B — Railway (recomendado: host HTTPS fixo)
 
-1. New Project → Deploy from GitHub → pasta `checklist-app` (ou root com Dockerfile em `checklist-app/Dockerfile`).
-2. Se o root for o monorepo, defina **Root Directory** = `checklist-app`.
-3. Variáveis: `RESEND_API_KEY`, `RESEND_FROM`, `APP_SEND_TOKEN`, `CORS_ORIGIN`, `NODE_ENV=production`.
-4. Build: Dockerfile (detectado) **ou** `npm ci && npm run build` + Start `node server/index.mjs`.
-5. Gere domínio Railway (`*.up.railway.app`) ou ligue o seu domínio customizado.
+Arquivos prontos nesta pasta: `railway.toml` + `Dockerfile`.
+
+### CLI (rápido)
+
+```bash
+cd checklist-app
+railway login          # ou: railway login --browserless
+railway init           # cria projeto Task-Flux
+railway up             # sobe o container
+railway domain         # gera https://….up.railway.app (URL fixa)
+```
+
+Variáveis (dashboard ou `railway variables set`):
+
+```bash
+railway variables set NODE_ENV=production
+railway variables set RESEND_API_KEY=re_…
+railway variables set RESEND_FROM='Task-Flux <onboarding@resend.dev>'
+railway variables set APP_SEND_TOKEN='segredo-longo'
+# Depois de ter a URL pública:
+railway variables set CORS_ORIGIN=https://seu-app.up.railway.app
+```
+
+### Dashboard GitHub
+
+1. New Project → Deploy from GitHub → **Root Directory** = `checklist-app`.
+2. Mesmas variáveis acima; health check `/api/health`.
+3. Gere domínio Railway (`*.up.railway.app`) ou ligue o seu domínio.
 
 Para o APK Android apontar para a API Railway, rebuild com:
 
@@ -67,7 +100,13 @@ export VITE_APP_SEND_TOKEN=mesmo-segredo
 npm run apk:android
 ```
 
+> Em produção no mesmo host web, deixe `VITE_EMAIL_API_URL` vazio no build Docker (mesma origem `/api`).
+
 ## Opção C — Render
+
+Arquivo pronto: `render.yaml` (Blueprint). No dashboard: **Blueprints** → conecte o repo → pasta `checklist-app`.
+
+Ou manualmente:
 
 1. New **Web Service** → repo → Root Directory `checklist-app`.
 2. Runtime: Docker **ou** Native:
@@ -75,6 +114,7 @@ npm run apk:android
    - Start: `node server/index.mjs`
 3. Mesmas env vars da tabela.
 4. Health check path: `/api/health`.
+5. URL fixa: `https://….onrender.com` (plano free pode “dormir” após inatividade).
 
 ## Opção D — Fly.io
 
