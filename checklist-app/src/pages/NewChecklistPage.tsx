@@ -11,7 +11,7 @@ import type { ChecklistItem, ChecklistReport } from '../types';
 export function NewChecklistPage() {
   const navigate = useNavigate();
   const initial = useMemo(() => loadData(), []);
-  const [title, setTitle] = useState('Checklist de veículo');
+  const [title, setTitle] = useState('Checklist');
   const [location, setLocation] = useState('');
   const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems));
   const [newItem, setNewItem] = useState('');
@@ -100,8 +100,8 @@ export function NewChecklistPage() {
   return (
     <div className="page form-page">
       <header className="page-intro">
-        <h1>Novo checklist de veículo</h1>
-        <p>Conferir farol, pneus, para-brisa, lataria e o que mais precisar — com foto, voz e e-mail.</p>
+        <h1>Novo checklist</h1>
+        <p>Inclua os itens, tire fotos, descreva e envie por e-mail.</p>
       </header>
 
       <section className="form-block">
@@ -110,7 +110,7 @@ export function NewChecklistPage() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex.: Checklist diário da frota"
+            placeholder="Ex.: Checklist diário"
           />
         </label>
         <label className="field">
@@ -126,10 +126,10 @@ export function NewChecklistPage() {
       <section className="form-block">
         <div className="section-head">
           <h2>Itens do checklist</h2>
-          <p>Base para veículos: farol, pneus, para-brisa e lataria. Inclua ou remova o que quiser conferir.</p>
+          <p>Inclua o que deseja relatar como conferido (óleo, pneus…).</p>
         </div>
         {items.length === 0 ? (
-          <p className="hint">Nenhum item na lista. Adicione abaixo o que deseja conferir.</p>
+          <p className="hint">Lista em branco. Adicione abaixo o que deseja conferir.</p>
         ) : (
           <ul className="check-list">
             {items.map((item) => (
