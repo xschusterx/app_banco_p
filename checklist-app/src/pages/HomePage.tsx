@@ -11,9 +11,9 @@ export function HomePage() {
         <div className="hero-veil" aria-hidden />
         <div className="hero-copy">
           <p className="hero-brand">Task-Flux</p>
-          <h1>Checklist de veículos com foto, voz e envio por e-mail</h1>
+          <h1>Checklist</h1>
           <p className="hero-lead">
-            Confira farol, pneus, para-brisa e lataria, acrescente o que quiser, tire a foto e envie o relato.
+            Faça relatórios simples e fáceis e encaminhe direto no seu e-mail.
           </p>
           <div className="hero-actions">
             <Link className="btn primary" to="/novo">
