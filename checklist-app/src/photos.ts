@@ -1,5 +1,5 @@
 /** Limite de fotos por checklist (evita estourar localStorage / API). */
-export const MAX_PHOTOS = 5
+export const MAX_PHOTOS = 20
 
 /** Lado máximo (px) após compressão. */
 const MAX_EDGE = 1280

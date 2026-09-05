@@ -48,7 +48,7 @@ const RESEND_API_KEY = resolveResendApiKey()
 const RESEND_FROM = process.env.RESEND_FROM || 'Task-Flux <onboarding@resend.dev>'
 const APP_SEND_TOKEN = process.env.APP_SEND_TOKEN || ''
 const MAX_RECIPIENTS = 10
-const MAX_PHOTOS = 5
+const MAX_PHOTOS = 20
 const MAX_PHOTO_CHARS = 4_500_000 // ~3.3 MB em base64 por foto
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

@@ -8,7 +8,7 @@ O fluxo preferido é:
 
 Se `RESEND_API_KEY` **não** estiver configurada (ou for um placeholder inválido), o app **não falha**: ele usa o compartilhamento nativo (com as fotos, quando o aparelho permitir) ou abre o app de e-mail (`mailto:`).
 
-> **Importante:** `mailto:` **não anexa fotos**. Sem `RESEND_API_KEY`, use o compartilhamento do aparelho (ou configure a chave) para o destinatário receber as imagens. O app aceita até **5 fotos** por checklist (comprimidas antes do envio).
+> **Importante:** `mailto:` **não anexa fotos**. Sem `RESEND_API_KEY`, use o compartilhamento do aparelho (ou configure a chave) para o destinatário receber as imagens. O app aceita até **20 fotos** por checklist (comprimidas antes do envio).
 
 
 ## Por que backend?
