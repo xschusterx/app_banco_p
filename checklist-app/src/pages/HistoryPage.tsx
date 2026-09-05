@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { sendReportEmail } from '../email'
-import { normalizePhotoUrls } from '../photos'
+import { normalizePhotos, normalizePhotoUrls } from '../photos'
 import { deleteReport, loadData } from '../storage'
 
 export function HistoryPage() {
@@ -57,7 +57,7 @@ export function ReportDetailPage() {
     )
   }
 
-  const photos = normalizePhotoUrls(report)
+  const photos = normalizePhotos(report)
 
   async function handleResend() {
     if (!report || sending) return
@@ -87,10 +87,13 @@ export function ReportDetailPage() {
       </header>
 
       {photos.length ? (
-        <ul className="photo-grid detail">
-          {photos.map((url, index) => (
-            <li key={`detail-photo-${index}`} className="photo-grid-item">
-              <img src={url} alt={`Foto ${index + 1} do checklist ${report.title}`} />
+        <ul className="photo-grid photo-grid-notes detail">
+          {photos.map((photo, index) => (
+            <li key={`detail-photo-${index}`} className="photo-grid-item has-note">
+              <div className="photo-thumb">
+                <img src={photo.dataUrl} alt={`Foto ${index + 1} do checklist ${report.title}`} />
+              </div>
+              {photo.note ? <p className="photo-note-text">{photo.note}</p> : null}
             </li>
           ))}
         </ul>

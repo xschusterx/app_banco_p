@@ -10,8 +10,9 @@ import {
   prefetchEmailConfigured,
   sendReportEmail,
 } from '../email'
+import { photosToReportFields } from '../photos'
 import { loadData, saveReport, uid } from '../storage'
-import type { ChecklistItem, ChecklistReport } from '../types'
+import type { ChecklistItem, ChecklistPhoto, ChecklistReport } from '../types'
 
 export function NewChecklistPage() {
   const navigate = useNavigate()
@@ -21,7 +22,7 @@ export function NewChecklistPage() {
   const [items, setItems] = useState<ChecklistItem[]>(() => createItems(initial.defaultItems))
   const [newItem, setNewItem] = useState('')
   const [observations, setObservations] = useState('')
-  const [photoDataUrls, setPhotoDataUrls] = useState<string[]>([])
+  const [photos, setPhotos] = useState<ChecklistPhoto[]>([])
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
   const [customEmail, setCustomEmail] = useState('')
@@ -94,29 +95,30 @@ export function NewChecklistPage() {
       return
     }
 
+    const photoFields = photosToReportFields(photos)
     const report: ChecklistReport = {
       id: uid(),
       title: title.trim(),
       location: location.trim(),
       items,
       observations: observations.trim(),
-      photoDataUrls,
+      ...photoFields,
       createdAt: new Date().toISOString(),
       sentTo: emails,
     }
 
     setSending(true)
     setFeedback(
-      photoDataUrls.length
-        ? `Enviando checklist com ${photoDataUrls.length} foto(s) pelo servidor…`
+      photos.length
+        ? `Enviando checklist com ${photos.length} foto(s) pelo servidor…`
         : 'Enviando checklist pelo servidor…',
     )
     try {
       const result = await sendReportEmail(report)
       saveReport(report)
       setFeedback(
-        photoDataUrls.length
-          ? `Enviado para ${result.sentTo.join(', ')} com ${photoDataUrls.length} foto(s) no e-mail.`
+        photos.length
+          ? `Enviado para ${result.sentTo.join(', ')} com ${photos.length} foto(s) no e-mail.`
           : `Enviado para ${result.sentTo.join(', ')}.`,
       )
       setSending(false)
@@ -135,8 +137,8 @@ export function NewChecklistPage() {
       <header className="page-intro">
         <h1>Novo checklist</h1>
         <p>
-          Tire fotos, marque os itens e envie. O e-mail sai pelo servidor Task-Flux — sem abrir sua
-          caixa de entrada — e as fotos aparecem no corpo do relatório.
+          Tire fotos, marque os itens e envie. Depois de cada foto você pode acrescentar uma
+          observação. O e-mail sai pelo servidor Task-Flux — sem abrir sua caixa de entrada.
         </p>
       </header>
 
@@ -187,7 +189,11 @@ export function NewChecklistPage() {
             {items.map((item) => (
               <li key={item.id} className="check-item">
                 <label className={`check-row ${item.done ? 'done' : ''}`}>
-                  <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
+                  <input
+                    type="checkbox"
+                    checked={item.done}
+                    onChange={() => toggleItem(item.id)}
+                  />
                   <span>{item.label}</span>
                 </label>
                 <button
@@ -216,7 +222,7 @@ export function NewChecklistPage() {
         </form>
       </section>
 
-      <PhotoCapture photoDataUrls={photoDataUrls} onChange={setPhotoDataUrls} />
+      <PhotoCapture photos={photos} onChange={setPhotos} />
       <ObservationsField value={observations} onChange={setObservations} />
 
       <ContactPicker

@@ -1,3 +1,5 @@
+import type { ChecklistPhoto, ChecklistReport } from './types'
+
 /** Limite de fotos por checklist (evita estourar localStorage / API). */
 export const MAX_PHOTOS = 20
 
@@ -43,16 +45,57 @@ export function compressImageFile(file: File): Promise<string> {
   })
 }
 
-/** Normaliza relatórios antigos (1 foto) para a lista atual. */
+/** Normaliza relatórios antigos (só data URL) para a lista atual com notas. */
+export function normalizePhotos(report: {
+  photos?: ChecklistPhoto[] | null
+  photoDataUrls?: string[] | null
+  photoDataUrl?: string | null
+}): ChecklistPhoto[] {
+  if (Array.isArray(report.photos) && report.photos.length) {
+    return report.photos
+      .filter((photo) => photo && typeof photo.dataUrl === 'string' && photo.dataUrl.startsWith('data:image/'))
+      .map((photo) => ({
+        dataUrl: photo.dataUrl,
+        note: typeof photo.note === 'string' ? photo.note.trim() : '',
+      }))
+  }
+
+  const urls: string[] = []
+  if (Array.isArray(report.photoDataUrls) && report.photoDataUrls.length) {
+    for (const url of report.photoDataUrls) {
+      if (typeof url === 'string' && url.startsWith('data:image/')) urls.push(url)
+    }
+  } else if (typeof report.photoDataUrl === 'string' && report.photoDataUrl.startsWith('data:image/')) {
+    urls.push(report.photoDataUrl)
+  }
+
+  return urls.map((dataUrl) => ({ dataUrl, note: '' }))
+}
+
+/** Só as data URLs — útil para anexos e migração. */
 export function normalizePhotoUrls(report: {
+  photos?: ChecklistPhoto[] | null
   photoDataUrls?: string[] | null
   photoDataUrl?: string | null
 }): string[] {
-  if (Array.isArray(report.photoDataUrls) && report.photoDataUrls.length) {
-    return report.photoDataUrls.filter((url) => typeof url === 'string' && url.startsWith('data:image/'))
+  return normalizePhotos(report).map((photo) => photo.dataUrl)
+}
+
+export function withSyncedPhotoFields<T extends Partial<ChecklistReport>>(report: T): T & {
+  photos: ChecklistPhoto[]
+  photoDataUrls: string[]
+  photoDataUrl: undefined
+} {
+  const photos = normalizePhotos(report)
+  return {
+    ...report,
+    photos,
+    photoDataUrls: photos.map((photo) => photo.dataUrl),
+    photoDataUrl: undefined,
   }
-  if (typeof report.photoDataUrl === 'string' && report.photoDataUrl.startsWith('data:image/')) {
-    return [report.photoDataUrl]
-  }
-  return []
+}
+
+/** Atalho para montar os campos de foto a partir da lista da tela. */
+export function photosToReportFields(photos: ChecklistPhoto[]) {
+  return withSyncedPhotoFields({ photos })
 }

@@ -137,6 +137,8 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       createdAt,
       photoDataUrl,
       photoDataUrls,
+      photoNotes,
+      photos: photosPayload,
     } = req.body || {}
 
     const recipients = normalizeEmails(to)
@@ -158,6 +160,12 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
 
     const photoUrls = collectPhotoDataUrls({ photoDataUrl, photoDataUrls })
     const photos = photoUrls.map((url) => extractPhotoBase64(url)).filter(Boolean)
+    const notesFromPayload = Array.isArray(photosPayload)
+      ? photosPayload.map((photo) => String(photo?.note || '').trim().slice(0, 500))
+      : Array.isArray(photoNotes)
+        ? photoNotes.map((note) => String(note || '').trim().slice(0, 500))
+        : []
+    const safePhotoNotes = photoUrls.map((_, index) => notesFromPayload[index] || '')
 
     const report = {
       title: safeTitle,
@@ -167,6 +175,7 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       createdAt: safeCreatedAt,
       hasPhoto: photos.length > 0,
       photoCount: photos.length,
+      photoNotes: safePhotoNotes,
     }
 
     const resend = new Resend(RESEND_API_KEY)
@@ -217,41 +226,53 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
 
 const releaseDir = join(rootDir, 'release')
 const downloadsDir = existsSync(releaseDir) ? releaseDir : join(rootDir, 'dist', 'downloads')
+const APK_FILE = 'task-flux-1.0.0.apk'
+const APK_DOWNLOAD_NAME = 'Task-Flux.apk'
 
-app.get('/downloads', (_req, res) => {
-  const files = existsSync(downloadsDir)
-    ? [
-        existsSync(join(downloadsDir, 'task-flux-1.0.0.apk')) && 'task-flux-1.0.0.apk',
-        existsSync(join(downloadsDir, 'task-flux-ios-xcode-1.0.0.zip')) &&
-          'task-flux-ios-xcode-1.0.0.zip',
-      ].filter(Boolean)
-    : []
-  const links = files
-    .map((name) => `<li><a href="/downloads/${name}">${name}</a></li>`)
-    .join('\n')
-  res
-    .type('html')
-    .send(
-      `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Task-Flux downloads</title></head><body><h1>Task-Flux</h1><ul>${links || '<li>Nenhum pacote ainda.</li>'}</ul></body></html>`,
-    )
+function sendApk(res, next, { asAttachment = true } = {}) {
+  const full = join(downloadsDir, APK_FILE)
+  if (!existsSync(full)) return res.status(404).send('APK não encontrado')
+  // MIME de pacote Android + nome .apk: o Chrome costuma oferecer "Abrir" no instalador
+  // em vez de só abrir a pasta de Downloads.
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive')
+  res.setHeader(
+    'Content-Disposition',
+    `${asAttachment ? 'attachment' : 'inline'}; filename="${APK_DOWNLOAD_NAME}"`,
+  )
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Cache-Control', 'no-store')
+  return res.sendFile(full, (err) => (err ? next(err) : undefined))
+}
+
+app.get(['/instalar', '/instalar/'], (_req, res) => {
+  res.redirect(302, '/instalar.html')
+})
+
+app.get(['/downloads', '/downloads/'], (_req, res) => {
+  res.redirect(302, '/instalar.html')
+})
+
+/** Atalho direto para o instalador Android (headers otimizados). */
+app.get(['/install.apk', '/install/android', '/Task-Flux.apk'], (_req, res, next) => {
+  return sendApk(res, next, { asAttachment: true })
 })
 
 app.get('/downloads/:file', (req, res, next) => {
-  const allowed = new Set(['task-flux-1.0.0.apk', 'task-flux-ios-xcode-1.0.0.zip'])
+  const allowed = new Set([APK_FILE, 'task-flux-ios-xcode-1.0.0.zip'])
   const file = String(req.params.file || '')
   if (!allowed.has(file)) return res.status(404).send('Not found')
+  if (file.endsWith('.apk')) {
+    return sendApk(res, next, { asAttachment: true })
+  }
   const full = join(downloadsDir, file)
   if (!existsSync(full)) return res.status(404).send('Not found')
-  if (file.endsWith('.apk')) {
-    res.type('application/vnd.android.package-archive')
-  }
   return res.download(full, file, (err) => (err ? next(err) : undefined))
 })
 
 const distDir = join(rootDir, 'dist')
 if (existsSync(distDir)) {
   app.use(express.static(distDir))
-  app.get(/^(?!\/api)(?!\/downloads).*/, (_req, res) => {
+  app.get(/^(?!\/api)(?!\/downloads)(?!\/install\.apk)(?!\/install\/)(?!\/Task-Flux\.apk)(?!\/instalar\.html).*/, (_req, res) => {
     res.sendFile(join(distDir, 'index.html'))
   })
 } else {

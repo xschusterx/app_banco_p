@@ -17,15 +17,25 @@ export type ContactGroup = {
   emails: string[];
 };
 
+/** Foto do checklist com observação opcional. */
+export type ChecklistPhoto = {
+  dataUrl: string;
+  note: string;
+};
+
 export type ChecklistReport = {
   id: string;
   title: string;
   location: string;
   items: ChecklistItem[];
   observations: string;
-  /** Fotos comprimidas em data URL (JPEG). Relatórios antigos podem ter só photoDataUrl. */
+  /** Fotos com observação opcional por imagem. */
+  photos: ChecklistPhoto[];
+  /**
+   * @deprecated use `photos` — mantido sincronizado para histórico antigo / e-mail.
+   */
   photoDataUrls: string[];
-  /** @deprecated use photoDataUrls — mantido só para migração de histórico antigo */
+  /** @deprecated use photos — migração de histórico antigo */
   photoDataUrl?: string | null;
   createdAt: string;
   sentTo: string[];

@@ -1,5 +1,5 @@
 import type { ChecklistItem, ChecklistReport } from './types'
-import { normalizePhotoUrls } from './photos'
+import { normalizePhotos, normalizePhotoUrls } from './photos'
 
 const API_BASE = (import.meta.env.VITE_EMAIL_API_URL as string | undefined)?.replace(/\/$/, '') || ''
 const APP_TOKEN = (import.meta.env.VITE_APP_SEND_TOKEN as string | undefined) || ''
@@ -35,7 +35,8 @@ export type SendEmailResult = {
  * Não abre o e-mail pessoal do usuário — as fotos vão anexadas + no corpo do HTML.
  */
 export async function sendReportEmail(report: ChecklistReport): Promise<SendEmailResult> {
-  const photos = normalizePhotoUrls(report)
+  const photos = normalizePhotos(report)
+  const photoDataUrls = normalizePhotoUrls(report)
 
   if (cachedEmailConfigured === null) {
     await prefetchEmailConfigured()
@@ -65,8 +66,10 @@ export async function sendReportEmail(report: ChecklistReport): Promise<SendEmai
         items: report.items.map((item) => ({ label: item.label, done: item.done })),
         observations: report.observations,
         createdAt: report.createdAt,
-        photoDataUrls: photos,
-        photoDataUrl: photos[0] ?? null,
+        photos,
+        photoNotes: photos.map((photo) => photo.note),
+        photoDataUrls,
+        photoDataUrl: photoDataUrls[0] ?? null,
       }),
     })
   } catch {
