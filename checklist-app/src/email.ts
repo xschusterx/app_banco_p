@@ -70,6 +70,8 @@ export async function sendReportEmail(report: ChecklistReport): Promise<SendEmai
         photoNotes: photos.map((photo) => photo.note),
         photoDataUrls,
         photoDataUrl: photoDataUrls[0] ?? null,
+        authorSignature: report.authorSignature ?? null,
+        verifierSignature: report.verifierSignature ?? null,
       }),
     })
   } catch {

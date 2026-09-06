@@ -23,6 +23,13 @@ export type ChecklistPhoto = {
   note: string;
 };
 
+/** Assinatura manuscrita (canvas → PNG) com nome legível. */
+export type ChecklistSignature = {
+  name: string;
+  dataUrl: string;
+  signedAt: string;
+};
+
 export type ChecklistReport = {
   id: string;
   title: string;
@@ -37,6 +44,10 @@ export type ChecklistReport = {
   photoDataUrls: string[];
   /** @deprecated use photos — migração de histórico antigo */
   photoDataUrl?: string | null;
+  /** Quem preencheu o checklist (obrigatório nos novos envios). */
+  authorSignature?: ChecklistSignature | null;
+  /** Quem conferiu o checklist (obrigatório nos novos envios). */
+  verifierSignature?: ChecklistSignature | null;
   createdAt: string;
   sentTo: string[];
 };

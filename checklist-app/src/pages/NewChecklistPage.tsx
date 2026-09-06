@@ -5,6 +5,11 @@ import { ContactPicker } from '../components/ContactPicker'
 import { ObservationsField } from '../components/ObservationsField'
 import { PhotoCapture } from '../components/PhotoCapture'
 import {
+  SignaturesBlock,
+  buildSignature,
+  isSignatureComplete,
+} from '../components/SignaturesBlock'
+import {
   createItems,
   getCachedEmailConfigured,
   prefetchEmailConfigured,
@@ -41,6 +46,10 @@ function emptyForm(defaultItems: string[]) {
     selectedGroupIds: [] as string[],
     selectedContactIds: [] as string[],
     customEmail: '',
+    authorName: '',
+    authorSignatureDataUrl: null as string | null,
+    verifierName: '',
+    verifierSignatureDataUrl: null as string | null,
   }
 }
 
@@ -54,6 +63,10 @@ function formFromDraft(draft: ChecklistDraft) {
     selectedGroupIds: draft.selectedGroupIds || [],
     selectedContactIds: draft.selectedContactIds || [],
     customEmail: draft.customEmail || '',
+    authorName: draft.authorName || '',
+    authorSignatureDataUrl: draft.authorSignatureDataUrl || null,
+    verifierName: draft.verifierName || '',
+    verifierSignatureDataUrl: draft.verifierSignatureDataUrl || null,
   }
 }
 
@@ -74,17 +87,29 @@ export function NewChecklistPage() {
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(initialForm.selectedGroupIds)
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>(initialForm.selectedContactIds)
   const [customEmail, setCustomEmail] = useState(initialForm.customEmail)
+  const [authorName, setAuthorName] = useState(initialForm.authorName)
+  const [authorSignatureDataUrl, setAuthorSignatureDataUrl] = useState<string | null>(
+    initialForm.authorSignatureDataUrl,
+  )
+  const [verifierName, setVerifierName] = useState(initialForm.verifierName)
+  const [verifierSignatureDataUrl, setVerifierSignatureDataUrl] = useState<string | null>(
+    initialForm.verifierSignatureDataUrl,
+  )
   const [feedback, setFeedback] = useState<string | null>(
     savedDraft ? 'Rascunho restaurado deste aparelho.' : null,
   )
   const [sending, setSending] = useState(false)
   const [emailReady, setEmailReady] = useState<boolean | null>(null)
 
+  const authorSignature = buildSignature(authorName, authorSignatureDataUrl)
+  const verifierSignature = buildSignature(verifierName, verifierSignatureDataUrl)
+  const signaturesReady =
+    isSignatureComplete(authorSignature) && isSignatureComplete(verifierSignature)
+
   useEffect(() => {
     void prefetchEmailConfigured().then((ok) => setEmailReady(ok))
   }, [])
 
-  // Recarrega contatos/grupos ao focar a página (após cadastrar em Contatos).
   useEffect(() => {
     function refreshContacts() {
       const next = readAddressBook()
@@ -100,7 +125,6 @@ export function NewChecklistPage() {
     }
   }, [])
 
-  // Persistência automática do rascunho (sem fotos enormes bloqueando a UI).
   useEffect(() => {
     const timer = window.setTimeout(() => {
       saveDraft({
@@ -112,6 +136,10 @@ export function NewChecklistPage() {
         selectedGroupIds,
         selectedContactIds,
         customEmail,
+        authorName,
+        authorSignatureDataUrl,
+        verifierName,
+        verifierSignatureDataUrl,
       })
     }, 400)
     return () => window.clearTimeout(timer)
@@ -124,6 +152,10 @@ export function NewChecklistPage() {
     selectedGroupIds,
     selectedContactIds,
     customEmail,
+    authorName,
+    authorSignatureDataUrl,
+    verifierName,
+    verifierSignatureDataUrl,
   ])
 
   function toggleItem(id: string) {
@@ -143,9 +175,7 @@ export function NewChecklistPage() {
   }
 
   function toggleGroup(id: string) {
-    setSelectedGroupIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    )
+    setSelectedGroupIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
   function toggleContact(id: string) {
@@ -155,12 +185,8 @@ export function NewChecklistPage() {
   }
 
   function collectEmails(): string[] {
-    const fromGroups = groups
-      .filter((g) => selectedGroupIds.includes(g.id))
-      .flatMap((g) => g.emails)
-    const fromContacts = contacts
-      .filter((c) => selectedContactIds.includes(c.id))
-      .map((c) => c.email)
+    const fromGroups = groups.filter((g) => selectedGroupIds.includes(g.id)).flatMap((g) => g.emails)
+    const fromContacts = contacts.filter((c) => selectedContactIds.includes(c.id)).map((c) => c.email)
     const extra = customEmail.trim()
     const all = [...fromGroups, ...fromContacts]
     if (extra) all.push(extra)
@@ -177,6 +203,10 @@ export function NewChecklistPage() {
       selectedGroupIds,
       selectedContactIds,
       customEmail,
+      authorName,
+      authorSignatureDataUrl,
+      verifierName,
+      verifierSignatureDataUrl,
     })
     setFeedback('Rascunho salvo neste aparelho.')
   }
@@ -192,6 +222,10 @@ export function NewChecklistPage() {
     setSelectedGroupIds(blank.selectedGroupIds)
     setSelectedContactIds(blank.selectedContactIds)
     setCustomEmail(blank.customEmail)
+    setAuthorName(blank.authorName)
+    setAuthorSignatureDataUrl(blank.authorSignatureDataUrl)
+    setVerifierName(blank.verifierName)
+    setVerifierSignatureDataUrl(blank.verifierSignatureDataUrl)
     setFeedback('Rascunho limpo.')
   }
 
@@ -205,6 +239,18 @@ export function NewChecklistPage() {
       setFeedback('Escolha um contato/grupo cadastrado ou informe o e-mail de destino.')
       return
     }
+
+    const author = buildSignature(authorName, authorSignatureDataUrl)
+    const verifier = buildSignature(verifierName, verifierSignatureDataUrl)
+    if (!isSignatureComplete(author)) {
+      setFeedback('Assinatura e nome do responsável são obrigatórios para finalizar.')
+      return
+    }
+    if (!isSignatureComplete(verifier)) {
+      setFeedback('Assinatura e nome do conferente são obrigatórios para finalizar.')
+      return
+    }
+
     if (sending) return
 
     const ready = emailReady ?? getCachedEmailConfigured()
@@ -223,6 +269,8 @@ export function NewChecklistPage() {
       items,
       observations: observations.trim(),
       ...photoFields,
+      authorSignature: author,
+      verifierSignature: verifier,
       createdAt: new Date().toISOString(),
       sentTo: emails,
     }
@@ -258,8 +306,8 @@ export function NewChecklistPage() {
       <header className="page-intro">
         <h1>Novo checklist</h1>
         <p>
-          Tire fotos, marque os itens e envie. Depois de cada foto você pode acrescentar uma
-          observação. O e-mail sai pelo servidor Task-Flux — sem abrir sua caixa de entrada.
+          Tire fotos, marque os itens e envie. No final, o responsável e o conferente precisam
+          assinar. O e-mail sai pelo servidor Task-Flux — sem abrir sua caixa de entrada.
         </p>
       </header>
 
@@ -310,11 +358,7 @@ export function NewChecklistPage() {
             {items.map((item) => (
               <li key={item.id} className="check-item">
                 <label className={`check-row ${item.done ? 'done' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={item.done}
-                    onChange={() => toggleItem(item.id)}
-                  />
+                  <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
                   <span>{item.label}</span>
                 </label>
                 <button
@@ -357,6 +401,18 @@ export function NewChecklistPage() {
         onCustomEmailChange={setCustomEmail}
       />
 
+      <SignaturesBlock
+        authorName={authorName}
+        authorDataUrl={authorSignatureDataUrl}
+        verifierName={verifierName}
+        verifierDataUrl={verifierSignatureDataUrl}
+        onAuthorNameChange={setAuthorName}
+        onAuthorDataUrlChange={setAuthorSignatureDataUrl}
+        onVerifierNameChange={setVerifierName}
+        onVerifierDataUrlChange={setVerifierSignatureDataUrl}
+        disabled={sending}
+      />
+
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="sticky-actions">
@@ -370,9 +426,13 @@ export function NewChecklistPage() {
           type="button"
           className="btn primary wide"
           onClick={() => void handleFinish()}
-          disabled={sending || emailReady === false}
+          disabled={sending || emailReady === false || !signaturesReady}
         >
-          {sending ? 'Enviando…' : 'Finalizar e enviar pelo servidor'}
+          {sending
+            ? 'Enviando…'
+            : signaturesReady
+              ? 'Finalizar e enviar pelo servidor'
+              : 'Assine para finalizar'}
         </button>
       </div>
     </div>

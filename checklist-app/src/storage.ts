@@ -17,6 +17,10 @@ export type ChecklistDraft = {
   selectedGroupIds: string[];
   selectedContactIds: string[];
   customEmail: string;
+  authorName: string;
+  authorSignatureDataUrl: string | null;
+  verifierName: string;
+  verifierSignatureDataUrl: string | null;
   updatedAt: string;
 };
 
@@ -136,6 +140,12 @@ export function loadDraft(): ChecklistDraft | null {
         ? parsed.selectedContactIds.map(String)
         : [],
       customEmail: typeof parsed.customEmail === 'string' ? parsed.customEmail : '',
+      authorName: typeof parsed.authorName === 'string' ? parsed.authorName : '',
+      authorSignatureDataUrl:
+        typeof parsed.authorSignatureDataUrl === 'string' ? parsed.authorSignatureDataUrl : null,
+      verifierName: typeof parsed.verifierName === 'string' ? parsed.verifierName : '',
+      verifierSignatureDataUrl:
+        typeof parsed.verifierSignatureDataUrl === 'string' ? parsed.verifierSignatureDataUrl : null,
       updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
     };
   } catch {

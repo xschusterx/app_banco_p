@@ -205,6 +205,23 @@ app.get('/api/health', (_req, res) => {
   })
 })
 
+
+function sanitizeSignature(raw, role) {
+  if (!raw || typeof raw !== 'object') return null
+  const name = String(raw.name || '').trim().slice(0, 120)
+  const dataUrl = String(raw.dataUrl || '')
+  if (!name || !dataUrl.startsWith('data:image/')) return null
+  const extracted = extractPhotoBase64(dataUrl)
+  if (!extracted) return null
+  return {
+    name,
+    signedAt: String(raw.signedAt || new Date().toISOString()),
+    contentType: extracted.contentType,
+    content: extracted.content,
+    role,
+  }
+}
+
 app.post('/api/send-email', sendLimiter, async (req, res) => {
   try {
     if (!RESEND_API_KEY) {
@@ -228,6 +245,8 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       photoDataUrls,
       photoNotes,
       photos: photosPayload,
+      authorSignature,
+      verifierSignature,
     } = req.body || {}
 
     const recipients = normalizeEmails(to)
@@ -256,6 +275,16 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
         : []
     const safePhotoNotes = photoUrls.map((_, index) => notesFromPayload[index] || '')
 
+    const safeAuthor = sanitizeSignature(authorSignature, 'author')
+    const safeVerifier = sanitizeSignature(verifierSignature, 'verifier')
+    // Novos checklists enviam as duas; reenvio de histórico antigo pode vir sem assinatura.
+    if ((authorSignature || verifierSignature) && (!safeAuthor || !safeVerifier)) {
+      return res.status(400).json({
+        error:
+          'Assinaturas incompletas: informe nome e assinatura do responsável e do conferente.',
+      })
+    }
+
     const report = {
       title: safeTitle,
       location: safeLocation,
@@ -265,6 +294,10 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       hasPhoto: photos.length > 0,
       photoCount: photos.length,
       photoNotes: safePhotoNotes,
+      authorName: safeAuthor?.name || '',
+      verifierName: safeVerifier?.name || '',
+      authorSignedAt: safeAuthor?.signedAt || '',
+      verifierSignedAt: safeVerifier?.signedAt || '',
     }
 
     const resend = new Resend(RESEND_API_KEY)
@@ -277,21 +310,49 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
       html: buildHtmlEmail(report),
     }
 
+    const attachments = []
     if (photos.length) {
       // contentId = CID para a foto aparecer no corpo do e-mail (não só como anexo).
-      payload.attachments = photos.map((photo, index) => {
+      for (const [index, photo] of photos.entries()) {
         const ext = photo.contentType.includes('png') ? 'png' : 'jpg'
         const contentId = `foto${index + 1}`
-        return {
+        attachments.push({
           filename: `checklist-foto-${index + 1}.${ext}`,
           content: photo.content,
           contentType: photo.contentType,
           contentId,
-        }
+        })
+      }
+    }
+
+    let authorCid = null
+    let verifierCid = null
+    if (safeAuthor && safeVerifier) {
+      authorCid = 'assinatura-responsavel'
+      verifierCid = 'assinatura-conferente'
+      attachments.push({
+        filename: 'assinatura-responsavel.png',
+        content: safeAuthor.content,
+        contentType: safeAuthor.contentType,
+        contentId: authorCid,
       })
+      attachments.push({
+        filename: 'assinatura-conferente.png',
+        content: safeVerifier.content,
+        contentType: safeVerifier.contentType,
+        contentId: verifierCid,
+      })
+    }
+
+    if (attachments.length) {
+      payload.attachments = attachments
       payload.html = buildHtmlEmail({
         ...report,
-        inlinePhotoCids: payload.attachments.map((a) => a.contentId),
+        inlinePhotoCids: attachments
+          .filter((a) => String(a.contentId).startsWith('foto'))
+          .map((a) => a.contentId),
+        authorSignatureCid: authorCid,
+        verifierSignatureCid: verifierCid,
       })
     }
 
