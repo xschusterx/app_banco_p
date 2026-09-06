@@ -6,11 +6,11 @@ O código do app fica em [`checklist-app/`](./checklist-app/).
 
 ## Produção
 
-| Recurso | URL |
-|---------|-----|
+| Recurso          | URL                                                       |
+| ---------------- | --------------------------------------------------------- |
 | App / instalador | https://task-flux-production.up.railway.app/instalar.html |
-| APK Android | https://task-flux-production.up.railway.app/install.apk |
-| Health da API | https://task-flux-production.up.railway.app/api/health |
+| APK Android      | https://task-flux-production.up.railway.app/install.apk   |
+| Health da API    | https://task-flux-production.up.railway.app/api/health    |
 
 ## O que o app faz
 
@@ -19,6 +19,7 @@ O código do app fica em [`checklist-app/`](./checklist-app/).
 - Ditado por voz (Web Speech API)
 - Contatos e grupos de e-mail
 - Assinaturas obrigatórias do responsável e do conferente
+- Opção de **salvar para enviar o e-mail depois** (histórico)
 - Envio do relatório por e-mail via API (Resend), sem login na caixa do usuário
 - Histórico local no aparelho
 - Tema claro/escuro
@@ -65,14 +66,14 @@ npm run dev      # Vite (outro terminal)
 
 ## Documentação
 
-| Guia | Conteúdo |
-|------|----------|
-| [checklist-app/README.md](./checklist-app/README.md) | Visão geral do app |
-| [checklist-app/INSTALL.md](./checklist-app/INSTALL.md) | Instalar / atualizar no celular |
-| [checklist-app/DEPLOY.md](./checklist-app/DEPLOY.md) | Produção e variáveis de ambiente |
-| [checklist-app/EMAIL.md](./checklist-app/EMAIL.md) | Configuração Resend |
-| [checklist-app/PLAY_STORE.md](./checklist-app/PLAY_STORE.md) | Publicar na Play Store |
-| [checklist-app/IOS.md](./checklist-app/IOS.md) | Build iOS |
+| Guia                                                         | Conteúdo                         |
+| ------------------------------------------------------------ | -------------------------------- |
+| [checklist-app/README.md](./checklist-app/README.md)         | Visão geral do app               |
+| [checklist-app/INSTALL.md](./checklist-app/INSTALL.md)       | Instalar / atualizar no celular  |
+| [checklist-app/DEPLOY.md](./checklist-app/DEPLOY.md)         | Produção e variáveis de ambiente |
+| [checklist-app/EMAIL.md](./checklist-app/EMAIL.md)           | Configuração Resend              |
+| [checklist-app/PLAY_STORE.md](./checklist-app/PLAY_STORE.md) | Publicar na Play Store           |
+| [checklist-app/IOS.md](./checklist-app/IOS.md)               | Build iOS                        |
 
 ## Licença
 

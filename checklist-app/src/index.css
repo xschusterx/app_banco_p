@@ -407,6 +407,25 @@ textarea {
   box-shadow: 0 14px 28px rgba(196, 137, 16, 0.34);
 }
 
+.btn.secondary {
+  background: var(--moss);
+  color: var(--on-strong);
+  box-shadow: 0 10px 22px rgba(27, 58, 47, 0.22);
+}
+
+.btn.secondary:hover {
+  box-shadow: 0 14px 26px rgba(27, 58, 47, 0.28);
+}
+
+.btn.secondary:disabled,
+.btn.primary:disabled,
+.btn.ghost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn.ghost {
   background: var(--ghost-bg);
   color: var(--moss);
@@ -606,6 +625,43 @@ textarea {
   color: var(--ink-muted);
   font-style: normal;
   font-size: 0.92rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 0.2rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.status-pill.inline {
+  margin-top: 0.65rem;
+}
+
+.status-pill.pending {
+  background: rgba(196, 137, 16, 0.16);
+  color: #8a5b00;
+}
+
+.status-pill.sent {
+  background: rgba(27, 107, 74, 0.14);
+  color: var(--moss-mid);
+}
+
+[data-theme='dark'] .status-pill.pending {
+  background: rgba(240, 180, 60, 0.18);
+  color: #f0c56a;
+}
+
+[data-theme='dark'] .status-pill.sent {
+  background: rgba(120, 200, 160, 0.16);
+  color: #9fd9b8;
 }
 
 .text-link {
@@ -849,7 +905,9 @@ textarea {
 }
 
 .btn.wide,
-.btn.ghost.wide {
+.btn.ghost.wide,
+.btn.secondary.wide,
+.btn.primary.wide {
   width: 100%;
 }
 

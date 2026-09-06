@@ -123,6 +123,23 @@ export function saveReport(report: ChecklistReport): AppData {
   return data;
 }
 
+export function updateReport(
+  id: string,
+  patch: Partial<Pick<ChecklistReport, 'sentTo' | 'sentAt'>>,
+): AppData {
+  const data = loadData();
+  const idx = data.reports.findIndex((r) => r.id === id);
+  if (idx < 0) return data;
+  data.reports[idx] = migrateReport({ ...data.reports[idx], ...patch });
+  saveData(data);
+  return data;
+}
+
+/** Checklist finalizado localmente, ainda sem e-mail enviado. */
+export function isReportPendingSend(report: ChecklistReport): boolean {
+  return report.sentAt === null;
+}
+
 export function deleteReport(id: string): AppData {
   const data = loadData();
   data.reports = data.reports.filter((r) => r.id !== id);

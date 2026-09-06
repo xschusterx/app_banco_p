@@ -1,8 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { sendReportEmail } from '../email';
 import { normalizePhotos, normalizePhotoUrls } from '../photos';
-import { deleteReport, loadData } from '../storage';
+import { deleteReport, isReportPendingSend, loadData, updateReport } from '../storage';
+import type { ChecklistReport } from '../types';
+
+function parseEmails(raw: string): string[] {
+  return Array.from(
+    new Set(
+      raw
+        .split(/[,;\s]+/)
+        .map((e) => e.trim().toLowerCase())
+        .filter((e) => e.includes('@')),
+    ),
+  );
+}
+
+function statusLabel(report: ChecklistReport): string {
+  return isReportPendingSend(report) ? 'Pendente de envio' : 'Enviado';
+}
 
 export function HistoryPage() {
   const reports = loadData().reports;
@@ -11,7 +27,7 @@ export function HistoryPage() {
     <div className="page">
       <header className="page-intro">
         <h1>Histórico</h1>
-        <p>Relatórios salvos neste aparelho para consulta e reenvio.</p>
+        <p>Relatórios salvos neste aparelho para consulta e envio depois.</p>
       </header>
 
       {!reports.length ? (
@@ -20,6 +36,7 @@ export function HistoryPage() {
         <ul className="report-list tall">
           {reports.map((report) => {
             const photos = normalizePhotoUrls(report);
+            const pending = isReportPendingSend(report);
             return (
               <li key={report.id}>
                 <Link to={`/historico/${report.id}`}>
@@ -28,6 +45,9 @@ export function HistoryPage() {
                     {new Date(report.createdAt).toLocaleString('pt-BR')}
                     {report.location ? ` · ${report.location}` : ''}
                     {photos.length ? ` · ${photos.length} foto(s)` : ''}
+                  </span>
+                  <span className={`status-pill ${pending ? 'pending' : 'sent'}`}>
+                    {statusLabel(report)}
                   </span>
                 </Link>
               </li>
@@ -42,9 +62,22 @@ export function HistoryPage() {
 export function ReportDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const report = loadData().reports.find((r) => r.id === id);
+  const initial = loadData().reports.find((r) => r.id === id);
+  const [report, setReport] = useState<ChecklistReport | undefined>(initial);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [emailDraft, setEmailDraft] = useState(() => initial?.sentTo.join(', ') ?? '');
+
+  useEffect(() => {
+    const next = loadData().reports.find((r) => r.id === id);
+    setReport(next);
+    setEmailDraft(next?.sentTo.join(', ') ?? '');
+    setFeedback(null);
+    setSending(false);
+  }, [id]);
+
+  const pending = useMemo(() => (report ? isReportPendingSend(report) : false), [report]);
+  const photos = report ? normalizePhotos(report) : [];
 
   if (!report) {
     return (
@@ -57,21 +90,34 @@ export function ReportDetailPage() {
     );
   }
 
-  const photos = normalizePhotos(report);
-
-  async function handleResend() {
+  async function handleSend() {
     if (!report || sending) return;
+    const emails = parseEmails(emailDraft);
+    if (!emails.length) {
+      setFeedback('Informe ao menos um e-mail de destino para enviar.');
+      return;
+    }
+
+    const toSend: ChecklistReport = { ...report, sentTo: emails };
     setSending(true);
-    setFeedback('Reenviando e-mail…');
+    setFeedback(pending ? 'Enviando e-mail…' : 'Reenviando e-mail…');
     try {
-      await sendReportEmail(report);
+      const result = await sendReportEmail(toSend);
+      const next: ChecklistReport = {
+        ...toSend,
+        sentTo: result.sentTo,
+        sentAt: new Date().toISOString(),
+      };
+      updateReport(report.id, { sentTo: next.sentTo, sentAt: next.sentAt });
+      setReport(next);
+      setEmailDraft(next.sentTo.join(', '));
       setFeedback(
         photos.length
-          ? `E-mail reenviado com ${photos.length} foto(s) no corpo/anexo.`
-          : 'E-mail reenviado pelo servidor.',
+          ? `E-mail enviado com ${photos.length} foto(s) para ${result.sentTo.join(', ')}.`
+          : `E-mail enviado para ${result.sentTo.join(', ')}.`,
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Falha ao reenviar.';
+      const message = error instanceof Error ? error.message : 'Falha ao enviar.';
       setFeedback(message);
     } finally {
       setSending(false);
@@ -84,7 +130,17 @@ export function ReportDetailPage() {
         <p className="eyebrow">{new Date(report.createdAt).toLocaleString('pt-BR')}</p>
         <h1>{report.title}</h1>
         {report.location ? <p className="hero-lead soft">{report.location}</p> : null}
+        <p className={`status-pill inline ${pending ? 'pending' : 'sent'}`}>
+          {statusLabel(report)}
+        </p>
       </header>
+
+      {pending ? (
+        <div className="banner warn" role="status">
+          <strong>Aguardando envio.</strong>
+          <span> Confira os destinatários abaixo e toque em enviar quando estiver pronto.</span>
+        </div>
+      ) : null}
 
       {photos.length ? (
         <ul className="photo-grid photo-grid-notes detail">
@@ -165,8 +221,23 @@ export function ReportDetailPage() {
       <section className="form-block">
         <div className="section-head">
           <h2>Destinatários</h2>
+          <p>
+            {pending
+              ? 'Informe um ou mais e-mails (separados por vírgula) para o envio.'
+              : 'Destinatários do último envio. Você pode alterar e reenviar.'}
+          </p>
         </div>
-        <p className="obs-text">{report.sentTo.join(', ')}</p>
+        <label className="field">
+          <span>E-mails</span>
+          <input
+            value={emailDraft}
+            onChange={(e) => setEmailDraft(e.target.value)}
+            placeholder="exemplo@empresa.com, equipe@empresa.com"
+            inputMode="email"
+            autoComplete="email"
+            disabled={sending}
+          />
+        </label>
       </section>
 
       {feedback ? <p className="feedback">{feedback}</p> : null}
@@ -175,10 +246,10 @@ export function ReportDetailPage() {
         <button
           type="button"
           className="btn primary"
-          onClick={() => void handleResend()}
+          onClick={() => void handleSend()}
           disabled={sending}
         >
-          {sending ? 'Enviando…' : 'Reenviar e-mail'}
+          {sending ? 'Enviando…' : pending ? 'Enviar e-mail agora' : 'Reenviar e-mail'}
         </button>
         <button
           type="button"

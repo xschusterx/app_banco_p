@@ -17,6 +17,7 @@ Versão atual do APK: **1.0.1** (`versionCode` 2).
 - Observações por texto ou **ditado de voz**
 - Contatos individuais e **grupos de e-mail**
 - **Assinaturas obrigatórias** do responsável e do conferente
+- **Salvar para enviar depois** e concluir o e-mail no histórico
 - Envio do relatório por e-mail **pelo servidor** (Resend)
 - Histórico local no aparelho (consulta e reenvio)
 - Tema claro/escuro
