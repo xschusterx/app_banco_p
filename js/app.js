@@ -131,7 +131,9 @@ dropzone.addEventListener("drop", (e) => {
   if (file) readFile(file);
 });
 
-document.getElementById("btn-download").addEventListener("click", () => {
+document.getElementById("btn-download").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
   if (!state.save) return;
   try {
     const out = ArsenalSave.build(state.save, collectEdits());
@@ -142,8 +144,16 @@ document.getElementById("btn-download").addEventListener("click", () => {
   }
 });
 
-document.getElementById("btn-boost").addEventListener("click", () => boostAll(999999));
-document.getElementById("btn-reset-res").addEventListener("click", () => boostAll(20000));
+document.getElementById("btn-boost").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  boostAll(999999);
+});
+document.getElementById("btn-reset-res").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  boostAll(20000);
+});
 
 document.getElementById("btn-sample").addEventListener("click", async () => {
   try {
