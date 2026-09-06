@@ -17,7 +17,7 @@
 3. Permita instalar de fontes desconhecidas / deste navegador
 4. Confirme **Instalar** (`com.taskflux.app`)
 
-Arquivo local: `release/task-flux-1.0.0.apk`
+Arquivo local: `release/task-flux-1.0.1.apk`
 
 ```bash
 cd checklist-app
@@ -37,3 +37,12 @@ App nativo (Mac/Xcode): `release/task-flux-ios-xcode-1.0.0.zip` — veja [IOS.md
 ## Deploy estável
 
 Veja [DEPLOY.md](./DEPLOY.md) (Docker / Railway / Render / Fly / VPS + DNS Resend).
+
+## Atualizar o app já instalado
+
+O Android **não atualiza sozinho** o sideload. Para pegar a versão nova:
+
+1. Abra https://task-flux-production.up.railway.app/instalar.html
+2. Toque em **Instalar o app agora** (APK 1.0.1)
+3. Se o sistema bloquear por “já instalado”, desinstale o Task-Flux antigo e instale de novo
+4. Ou use: Configurações → Apps → Task-Flux → Desinstalar, depois baixe `/install.apk`
