@@ -47,6 +47,17 @@ export function buildTextEmail(report) {
     })
   }
   lines.push('')
+  lines.push('Assinaturas:')
+  if (report.authorName) {
+    lines.push(`  Responsável: ${report.authorName}`)
+  }
+  if (report.verifierName) {
+    lines.push(`  Conferente: ${report.verifierName}`)
+  }
+  if (!report.authorName && !report.verifierName) {
+    lines.push('  (sem assinaturas)')
+  }
+  lines.push('')
   lines.push('— Enviado automaticamente pelo Task-Flux')
   return lines.join('\n')
 }
@@ -85,6 +96,34 @@ export function buildHtmlEmail(report) {
         </tr>`
     })
     .join('')
+
+
+  const signaturesHtml = report.authorSignatureCid || report.verifierSignatureCid
+    ? `
+      <tr>
+        <td style="padding:8px 28px 8px;">
+          <h2 style="margin:0 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#1b6b4a;">Assinaturas</h2>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+              <td width="50%" valign="top" style="padding:0 6px 0 0;">
+                <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;">
+                  <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6b7280;margin-bottom:8px;">Responsável</div>
+                  <div style="font-size:14px;font-weight:600;color:#143528;margin-bottom:10px;">${escapeHtml(report.authorName || '—')}</div>
+                  ${report.authorSignatureCid ? `<img src="cid:${report.authorSignatureCid}" alt="Assinatura do responsável" style="display:block;width:100%;max-width:240px;height:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;" />` : ''}
+                </div>
+              </td>
+              <td width="50%" valign="top" style="padding:0 0 0 6px;">
+                <div style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff;">
+                  <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6b7280;margin-bottom:8px;">Conferente</div>
+                  <div style="font-size:14px;font-weight:600;color:#143528;margin-bottom:10px;">${escapeHtml(report.verifierName || '—')}</div>
+                  ${report.verifierSignatureCid ? `<img src="cid:${report.verifierSignatureCid}" alt="Assinatura do conferente" style="display:block;width:100%;max-width:240px;height:auto;background:#fff;border:1px solid #e5e7eb;border-radius:8px;" />` : ''}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>`
+    : ''
 
   const photosHtml = Array.isArray(report.inlinePhotoCids) && report.inlinePhotoCids.length
     ? `
@@ -210,6 +249,8 @@ export function buildHtmlEmail(report) {
 
           <!-- Photos -->
           ${photosHtml}
+
+          ${signaturesHtml}
 
           <!-- Footer -->
           <tr>

@@ -124,6 +124,45 @@ export function ReportDetailPage() {
         <p className="obs-text">{report.observations || 'Sem observações.'}</p>
       </section>
 
+
+      <section className="form-block">
+        <div className="section-head">
+          <h2>Assinaturas</h2>
+        </div>
+        {report.authorSignature || report.verifierSignature ? (
+          <div className="signature-grid detail">
+            <div className="signature-card">
+              <h3>Responsável</h3>
+              <p className="obs-text">{report.authorSignature?.name || '—'}</p>
+              {report.authorSignature?.dataUrl ? (
+                <img
+                  className="signature-preview"
+                  src={report.authorSignature.dataUrl}
+                  alt={`Assinatura de ${report.authorSignature.name}`}
+                />
+              ) : (
+                <p className="hint">Sem imagem de assinatura.</p>
+              )}
+            </div>
+            <div className="signature-card">
+              <h3>Conferente</h3>
+              <p className="obs-text">{report.verifierSignature?.name || '—'}</p>
+              {report.verifierSignature?.dataUrl ? (
+                <img
+                  className="signature-preview"
+                  src={report.verifierSignature.dataUrl}
+                  alt={`Assinatura de ${report.verifierSignature.name}`}
+                />
+              ) : (
+                <p className="hint">Sem imagem de assinatura.</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="obs-text">Este checklist antigo não possui assinaturas registradas.</p>
+        )}
+      </section>
+
       <section className="form-block">
         <div className="section-head">
           <h2>Destinatários</h2>
