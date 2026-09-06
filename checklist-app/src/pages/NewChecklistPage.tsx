@@ -1,21 +1,18 @@
-import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ContactPicker } from '../components/ContactPicker'
-import { ObservationsField } from '../components/ObservationsField'
-import { PhotoCapture } from '../components/PhotoCapture'
-import {
-  SignaturesBlock,
-  buildSignature,
-  isSignatureComplete,
-} from '../components/SignaturesBlock'
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ContactPicker } from '../components/ContactPicker';
+import { ObservationsField } from '../components/ObservationsField';
+import { PhotoCapture } from '../components/PhotoCapture';
+import { SignaturesBlock } from '../components/SignaturesBlock';
+import { buildSignature, isSignatureComplete } from '../signatures';
 import {
   createItems,
   getCachedEmailConfigured,
   prefetchEmailConfigured,
   sendReportEmail,
-} from '../email'
-import { photosToReportFields } from '../photos'
+} from '../email';
+import { photosToReportFields } from '../photos';
 import {
   clearDraft,
   loadData,
@@ -24,16 +21,26 @@ import {
   saveReport,
   uid,
   type ChecklistDraft,
-} from '../storage'
-import type { ChecklistItem, ChecklistPhoto, ChecklistReport, Contact, ContactGroup } from '../types'
+} from '../storage';
+import type {
+  ChecklistItem,
+  ChecklistPhoto,
+  ChecklistReport,
+  Contact,
+  ContactGroup,
+} from '../types';
 
-function readAddressBook(): { contacts: Contact[]; groups: ContactGroup[]; defaultItems: string[] } {
-  const data = loadData()
+function readAddressBook(): {
+  contacts: Contact[];
+  groups: ContactGroup[];
+  defaultItems: string[];
+} {
+  const data = loadData();
   return {
     contacts: data.contacts,
     groups: data.groups,
     defaultItems: data.defaultItems,
-  }
+  };
 }
 
 function emptyForm(defaultItems: string[]) {
@@ -50,7 +57,7 @@ function emptyForm(defaultItems: string[]) {
     authorSignatureDataUrl: null as string | null,
     verifierName: '',
     verifierSignatureDataUrl: null as string | null,
-  }
+  };
 }
 
 function formFromDraft(draft: ChecklistDraft) {
@@ -67,63 +74,65 @@ function formFromDraft(draft: ChecklistDraft) {
     authorSignatureDataUrl: draft.authorSignatureDataUrl || null,
     verifierName: draft.verifierName || '',
     verifierSignatureDataUrl: draft.verifierSignatureDataUrl || null,
-  }
+  };
 }
 
 export function NewChecklistPage() {
-  const navigate = useNavigate()
-  const boot = readAddressBook()
-  const savedDraft = loadDraft()
-  const initialForm = savedDraft ? formFromDraft(savedDraft) : emptyForm(boot.defaultItems)
+  const navigate = useNavigate();
+  const boot = readAddressBook();
+  const savedDraft = loadDraft();
+  const initialForm = savedDraft ? formFromDraft(savedDraft) : emptyForm(boot.defaultItems);
 
-  const [contacts, setContacts] = useState<Contact[]>(boot.contacts)
-  const [groups, setGroups] = useState<ContactGroup[]>(boot.groups)
-  const [title, setTitle] = useState(initialForm.title)
-  const [location, setLocation] = useState(initialForm.location)
-  const [items, setItems] = useState<ChecklistItem[]>(initialForm.items)
-  const [newItem, setNewItem] = useState('')
-  const [observations, setObservations] = useState(initialForm.observations)
-  const [photos, setPhotos] = useState<ChecklistPhoto[]>(initialForm.photos)
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(initialForm.selectedGroupIds)
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(initialForm.selectedContactIds)
-  const [customEmail, setCustomEmail] = useState(initialForm.customEmail)
-  const [authorName, setAuthorName] = useState(initialForm.authorName)
+  const [contacts, setContacts] = useState<Contact[]>(boot.contacts);
+  const [groups, setGroups] = useState<ContactGroup[]>(boot.groups);
+  const [title, setTitle] = useState(initialForm.title);
+  const [location, setLocation] = useState(initialForm.location);
+  const [items, setItems] = useState<ChecklistItem[]>(initialForm.items);
+  const [newItem, setNewItem] = useState('');
+  const [observations, setObservations] = useState(initialForm.observations);
+  const [photos, setPhotos] = useState<ChecklistPhoto[]>(initialForm.photos);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(initialForm.selectedGroupIds);
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(
+    initialForm.selectedContactIds,
+  );
+  const [customEmail, setCustomEmail] = useState(initialForm.customEmail);
+  const [authorName, setAuthorName] = useState(initialForm.authorName);
   const [authorSignatureDataUrl, setAuthorSignatureDataUrl] = useState<string | null>(
     initialForm.authorSignatureDataUrl,
-  )
-  const [verifierName, setVerifierName] = useState(initialForm.verifierName)
+  );
+  const [verifierName, setVerifierName] = useState(initialForm.verifierName);
   const [verifierSignatureDataUrl, setVerifierSignatureDataUrl] = useState<string | null>(
     initialForm.verifierSignatureDataUrl,
-  )
+  );
   const [feedback, setFeedback] = useState<string | null>(
     savedDraft ? 'Rascunho restaurado deste aparelho.' : null,
-  )
-  const [sending, setSending] = useState(false)
-  const [emailReady, setEmailReady] = useState<boolean | null>(null)
+  );
+  const [sending, setSending] = useState(false);
+  const [emailReady, setEmailReady] = useState<boolean | null>(null);
 
-  const authorSignature = buildSignature(authorName, authorSignatureDataUrl)
-  const verifierSignature = buildSignature(verifierName, verifierSignatureDataUrl)
+  const authorSignature = buildSignature(authorName, authorSignatureDataUrl);
+  const verifierSignature = buildSignature(verifierName, verifierSignatureDataUrl);
   const signaturesReady =
-    isSignatureComplete(authorSignature) && isSignatureComplete(verifierSignature)
+    isSignatureComplete(authorSignature) && isSignatureComplete(verifierSignature);
 
   useEffect(() => {
-    void prefetchEmailConfigured().then((ok) => setEmailReady(ok))
-  }, [])
+    void prefetchEmailConfigured().then((ok) => setEmailReady(ok));
+  }, []);
 
   useEffect(() => {
     function refreshContacts() {
-      const next = readAddressBook()
-      setContacts(next.contacts)
-      setGroups(next.groups)
+      const next = readAddressBook();
+      setContacts(next.contacts);
+      setGroups(next.groups);
     }
-    refreshContacts()
-    window.addEventListener('focus', refreshContacts)
-    document.addEventListener('visibilitychange', refreshContacts)
+    refreshContacts();
+    window.addEventListener('focus', refreshContacts);
+    document.addEventListener('visibilitychange', refreshContacts);
     return () => {
-      window.removeEventListener('focus', refreshContacts)
-      document.removeEventListener('visibilitychange', refreshContacts)
-    }
-  }, [])
+      window.removeEventListener('focus', refreshContacts);
+      document.removeEventListener('visibilitychange', refreshContacts);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -140,9 +149,9 @@ export function NewChecklistPage() {
         authorSignatureDataUrl,
         verifierName,
         verifierSignatureDataUrl,
-      })
-    }, 400)
-    return () => window.clearTimeout(timer)
+      });
+    }, 400);
+    return () => window.clearTimeout(timer);
   }, [
     title,
     location,
@@ -156,41 +165,47 @@ export function NewChecklistPage() {
     authorSignatureDataUrl,
     verifierName,
     verifierSignatureDataUrl,
-  ])
+  ]);
 
   function toggleItem(id: string) {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)))
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
   }
 
   function addItem(e: FormEvent) {
-    e.preventDefault()
-    const label = newItem.trim()
-    if (!label) return
-    setItems((prev) => [...prev, { id: uid(), label, done: false }])
-    setNewItem('')
+    e.preventDefault();
+    const label = newItem.trim();
+    if (!label) return;
+    setItems((prev) => [...prev, { id: uid(), label, done: false }]);
+    setNewItem('');
   }
 
   function removeItem(id: string) {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+    setItems((prev) => prev.filter((item) => item.id !== id));
   }
 
   function toggleGroup(id: string) {
-    setSelectedGroupIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    setSelectedGroupIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }
 
   function toggleContact(id: string) {
     setSelectedContactIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    )
+    );
   }
 
   function collectEmails(): string[] {
-    const fromGroups = groups.filter((g) => selectedGroupIds.includes(g.id)).flatMap((g) => g.emails)
-    const fromContacts = contacts.filter((c) => selectedContactIds.includes(c.id)).map((c) => c.email)
-    const extra = customEmail.trim()
-    const all = [...fromGroups, ...fromContacts]
-    if (extra) all.push(extra)
-    return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))))
+    const fromGroups = groups
+      .filter((g) => selectedGroupIds.includes(g.id))
+      .flatMap((g) => g.emails);
+    const fromContacts = contacts
+      .filter((c) => selectedContactIds.includes(c.id))
+      .map((c) => c.email);
+    const extra = customEmail.trim();
+    const all = [...fromGroups, ...fromContacts];
+    if (extra) all.push(extra);
+    return Array.from(new Set(all.map((e) => e.toLowerCase()).filter((e) => e.includes('@'))));
   }
 
   function handleSaveDraft() {
@@ -207,61 +222,61 @@ export function NewChecklistPage() {
       authorSignatureDataUrl,
       verifierName,
       verifierSignatureDataUrl,
-    })
-    setFeedback('Rascunho salvo neste aparelho.')
+    });
+    setFeedback('Rascunho salvo neste aparelho.');
   }
 
   function handleClearDraft() {
-    clearDraft()
-    const blank = emptyForm(readAddressBook().defaultItems)
-    setTitle(blank.title)
-    setLocation(blank.location)
-    setItems(blank.items)
-    setObservations(blank.observations)
-    setPhotos(blank.photos)
-    setSelectedGroupIds(blank.selectedGroupIds)
-    setSelectedContactIds(blank.selectedContactIds)
-    setCustomEmail(blank.customEmail)
-    setAuthorName(blank.authorName)
-    setAuthorSignatureDataUrl(blank.authorSignatureDataUrl)
-    setVerifierName(blank.verifierName)
-    setVerifierSignatureDataUrl(blank.verifierSignatureDataUrl)
-    setFeedback('Rascunho limpo.')
+    clearDraft();
+    const blank = emptyForm(readAddressBook().defaultItems);
+    setTitle(blank.title);
+    setLocation(blank.location);
+    setItems(blank.items);
+    setObservations(blank.observations);
+    setPhotos(blank.photos);
+    setSelectedGroupIds(blank.selectedGroupIds);
+    setSelectedContactIds(blank.selectedContactIds);
+    setCustomEmail(blank.customEmail);
+    setAuthorName(blank.authorName);
+    setAuthorSignatureDataUrl(blank.authorSignatureDataUrl);
+    setVerifierName(blank.verifierName);
+    setVerifierSignatureDataUrl(blank.verifierSignatureDataUrl);
+    setFeedback('Rascunho limpo.');
   }
 
   async function handleFinish() {
-    const emails = collectEmails()
+    const emails = collectEmails();
     if (!title.trim()) {
-      setFeedback('Informe um título para o checklist.')
-      return
+      setFeedback('Informe um título para o checklist.');
+      return;
     }
     if (!emails.length) {
-      setFeedback('Escolha um contato/grupo cadastrado ou informe o e-mail de destino.')
-      return
+      setFeedback('Escolha um contato/grupo cadastrado ou informe o e-mail de destino.');
+      return;
     }
 
-    const author = buildSignature(authorName, authorSignatureDataUrl)
-    const verifier = buildSignature(verifierName, verifierSignatureDataUrl)
+    const author = buildSignature(authorName, authorSignatureDataUrl);
+    const verifier = buildSignature(verifierName, verifierSignatureDataUrl);
     if (!isSignatureComplete(author)) {
-      setFeedback('Assinatura e nome do responsável são obrigatórios para finalizar.')
-      return
+      setFeedback('Assinatura e nome do responsável são obrigatórios para finalizar.');
+      return;
     }
     if (!isSignatureComplete(verifier)) {
-      setFeedback('Assinatura e nome do conferente são obrigatórios para finalizar.')
-      return
+      setFeedback('Assinatura e nome do conferente são obrigatórios para finalizar.');
+      return;
     }
 
-    if (sending) return
+    if (sending) return;
 
-    const ready = emailReady ?? getCachedEmailConfigured()
+    const ready = emailReady ?? getCachedEmailConfigured();
     if (ready === false) {
       setFeedback(
         'Envio automático desligado: falta RESEND_API_KEY no servidor (EMAIL.md). Sem isso o app não consegue enviar as fotos sem abrir seu e-mail.',
-      )
-      return
+      );
+      return;
     }
 
-    const photoFields = photosToReportFields(photos)
+    const photoFields = photosToReportFields(photos);
     const report: ChecklistReport = {
       id: uid(),
       title: title.trim(),
@@ -273,31 +288,31 @@ export function NewChecklistPage() {
       verifierSignature: verifier,
       createdAt: new Date().toISOString(),
       sentTo: emails,
-    }
+    };
 
-    setSending(true)
+    setSending(true);
     setFeedback(
       photos.length
         ? `Enviando checklist com ${photos.length} foto(s) pelo servidor…`
         : 'Enviando checklist pelo servidor…',
-    )
+    );
     try {
-      const result = await sendReportEmail(report)
-      saveReport(report)
-      clearDraft()
+      const result = await sendReportEmail(report);
+      saveReport(report);
+      clearDraft();
       setFeedback(
         photos.length
           ? `Enviado para ${result.sentTo.join(', ')} com ${photos.length} foto(s) no e-mail.`
           : `Enviado para ${result.sentTo.join(', ')}.`,
-      )
-      setSending(false)
-      setTimeout(() => navigate(`/historico/${report.id}`), 900)
+      );
+      setSending(false);
+      setTimeout(() => navigate(`/historico/${report.id}`), 900);
     } catch (error) {
-      saveReport(report)
-      const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.'
-      setFeedback(`Checklist salvo neste aparelho. ${message}`)
-      setEmailReady(getCachedEmailConfigured())
-      setSending(false)
+      saveReport(report);
+      const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';
+      setFeedback(`Checklist salvo neste aparelho. ${message}`);
+      setEmailReady(getCachedEmailConfigured());
+      setSending(false);
     }
   }
 
@@ -416,10 +431,20 @@ export function NewChecklistPage() {
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="sticky-actions">
-        <button type="button" className="btn ghost wide" onClick={handleSaveDraft} disabled={sending}>
+        <button
+          type="button"
+          className="btn ghost wide"
+          onClick={handleSaveDraft}
+          disabled={sending}
+        >
           Salvar rascunho
         </button>
-        <button type="button" className="btn ghost wide" onClick={handleClearDraft} disabled={sending}>
+        <button
+          type="button"
+          className="btn ghost wide"
+          onClick={handleClearDraft}
+          disabled={sending}
+        >
           Limpar rascunho
         </button>
         <button
@@ -436,5 +461,5 @@ export function NewChecklistPage() {
         </button>
       </div>
     </div>
-  )
+  );
 }

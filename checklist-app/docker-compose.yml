@@ -11,7 +11,7 @@ services:
         VITE_EMAIL_API_URL: ${VITE_EMAIL_API_URL:-}
         VITE_APP_SEND_TOKEN: ${VITE_APP_SEND_TOKEN:-}
     ports:
-      - "${PORT:-8787}:8787"
+      - '${PORT:-8787}:8787'
     env_file:
       - .env
     environment:

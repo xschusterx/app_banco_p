@@ -36,11 +36,11 @@ Esses arquivos **não vão para o Git**. Guarde-os em local seguro. Sem o mesmo 
 
 Credenciais geradas neste ambiente:
 
-| Campo | Valor |
-| --- | --- |
+| Campo         | Valor              |
+| ------------- | ------------------ |
 | storePassword | `RelatoCampo2026!` |
-| keyPassword | `RelatoCampo2026!` |
-| keyAlias | `relato-campo` |
+| keyPassword   | `RelatoCampo2026!` |
+| keyAlias      | `relato-campo`     |
 
 ## Upload na Play Console
 

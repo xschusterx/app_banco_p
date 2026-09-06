@@ -16,7 +16,9 @@
     "build:mobile": "npm run build && npx cap sync",
     "open:ios": "npx cap open ios",
     "apk:android": "npm run build:android && cd android && ./gradlew assembleRelease && mkdir -p ../release ../dist/downloads && cp app/build/outputs/apk/release/app-release.apk ../release/task-flux-1.0.1.apk && cp ../release/task-flux-1.0.1.apk ../dist/downloads/task-flux-1.0.1.apk",
-    "bundle:android": "npm run build:android && cd android && ./gradlew bundleRelease && mkdir -p ../release && cp app/build/outputs/bundle/release/app-release.aab ../release/task-flux-1.0.1.aab"
+    "bundle:android": "npm run build:android && cd android && ./gradlew bundleRelease && mkdir -p ../release && cp app/build/outputs/bundle/release/app-release.aab ../release/task-flux-1.0.1.aab",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
@@ -38,6 +40,7 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
+    "prettier": "^3.6.2",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",
     "vite-plugin-pwa": "^1.3.0"

@@ -4,9 +4,9 @@ App de checklist de veículos (**web + Android + iOS/Capacitor**) com envio de r
 
 ## Produção
 
-- **Instalador:** https://task-flux-production.up.railway.app/instalar.html  
-- **APK:** https://task-flux-production.up.railway.app/install.apk  
-- **Health:** https://task-flux-production.up.railway.app/api/health  
+- **Instalador:** https://task-flux-production.up.railway.app/instalar.html
+- **APK:** https://task-flux-production.up.railway.app/install.apk
+- **Health:** https://task-flux-production.up.railway.app/api/health
 
 Versão atual do APK: **1.0.1** (`versionCode` 2).
 
@@ -55,15 +55,15 @@ Guia de e-mail: [EMAIL.md](./EMAIL.md)
 
 Copie [`.env.example`](./.env.example). Principais:
 
-| Variável | Onde | Descrição |
-|----------|------|-----------|
-| `RESEND_API_KEY` | servidor | Chave Resend (`re_…`) |
-| `RESEND_FROM` | servidor | Remetente (domínio verificado em produção) |
-| `APP_SEND_TOKEN` | servidor | Segredo do header `X-App-Token` (obrigatório em produção) |
-| `CORS_ORIGIN` | servidor | Origens permitidas (vírgula). `*` é ignorado em produção |
-| `PORT` | servidor | Padrão `8787` |
-| `VITE_EMAIL_API_URL` | build web/APK | URL pública HTTPS da API (vazio = mesma origem) |
-| `VITE_APP_SEND_TOKEN` | build web/APK | Mesmo valor de `APP_SEND_TOKEN` |
+| Variável              | Onde          | Descrição                                                 |
+| --------------------- | ------------- | --------------------------------------------------------- |
+| `RESEND_API_KEY`      | servidor      | Chave Resend (`re_…`)                                     |
+| `RESEND_FROM`         | servidor      | Remetente (domínio verificado em produção)                |
+| `APP_SEND_TOKEN`      | servidor      | Segredo do header `X-App-Token` (obrigatório em produção) |
+| `CORS_ORIGIN`         | servidor      | Origens permitidas (vírgula). `*` é ignorado em produção  |
+| `PORT`                | servidor      | Padrão `8787`                                             |
+| `VITE_EMAIL_API_URL`  | build web/APK | URL pública HTTPS da API (vazio = mesma origem)           |
+| `VITE_APP_SEND_TOKEN` | build web/APK | Mesmo valor de `APP_SEND_TOKEN`                           |
 
 ## Instalar no celular
 
@@ -119,16 +119,18 @@ Guia: [DEPLOY.md](./DEPLOY.md)
 
 ## Scripts npm
 
-| Script | Função |
-|--------|--------|
-| `npm run dev` | Vite (frontend) |
-| `npm run server` | API Express |
-| `npm start` | Build + API (produção local) |
-| `npm run build` | Build web |
-| `npm run apk:android` | Gera APK de release |
-| `npm run bundle:android` | Gera AAB para Play Store |
-| `npm run build:ios` | Sync Capacitor iOS |
-| `npm run lint` | Oxlint |
+| Script                   | Função                        |
+| ------------------------ | ----------------------------- |
+| `npm run dev`            | Vite (frontend)               |
+| `npm run server`         | API Express                   |
+| `npm start`              | Build + API (produção local)  |
+| `npm run build`          | Build web                     |
+| `npm run apk:android`    | Gera APK de release           |
+| `npm run bundle:android` | Gera AAB para Play Store      |
+| `npm run build:ios`      | Sync Capacitor iOS            |
+| `npm run lint`           | Oxlint                        |
+| `npm run format`         | Formata o código com Prettier |
+| `npm run format:check`   | Verifica formatação Prettier  |
 
 ## Segurança (resumo)
 

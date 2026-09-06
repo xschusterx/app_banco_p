@@ -127,7 +127,9 @@
           0 28px 60px rgba(20, 36, 29, 0.22),
           inset 0 0 0 1px rgba(255, 255, 255, 0.18);
         overflow: hidden;
-        animation: rise 0.85s ease 0.18s both, float 5.5s ease-in-out 1s infinite;
+        animation:
+          rise 0.85s ease 0.18s both,
+          float 5.5s ease-in-out 1s infinite;
       }
 
       .phone::before {
@@ -137,8 +139,7 @@
         border-radius: 1.45rem;
         background:
           radial-gradient(circle at 70% 18%, rgba(224, 164, 26, 0.35), transparent 42%),
-          linear-gradient(180deg, rgba(244, 250, 246, 0.12), transparent 40%),
-          #14241d;
+          linear-gradient(180deg, rgba(244, 250, 246, 0.12), transparent 40%), #14241d;
       }
 
       .phone-screen {
@@ -197,7 +198,9 @@
         font-family: var(--font-body);
         font-weight: 700;
         font-size: 1rem;
-        transition: transform 0.18s ease, background 0.18s ease;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease;
       }
 
       .btn:active {
@@ -323,7 +326,9 @@
         </header>
 
         <h2 class="headline" id="headline">Instale no seu celular</h2>
-        <p class="lede" id="lede">Checklist com foto e e-mail automático — no aparelho, em poucos toques.</p>
+        <p class="lede" id="lede">
+          Checklist com foto e e-mail automático — no aparelho, em poucos toques.
+        </p>
 
         <div class="phone" aria-hidden="true">
           <div class="notch"></div>
@@ -339,8 +344,13 @@
           <a class="btn btn-secondary" href="./">Abrir app (web / iPhone)</a>
         </div>
         <div class="hint" id="hint">
-          <p><strong>Android:</strong> toque em Instalar → na barra de download toque em <strong>Abrir</strong> (não abra a pasta) → Instalar.</p>
-          <p><strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.</p>
+          <p>
+            <strong>Android:</strong> toque em Instalar → na barra de download toque em
+            <strong>Abrir</strong> (não abra a pasta) → Instalar.
+          </p>
+          <p>
+            <strong>iPhone:</strong> abra no Safari → Compartilhar → Adicionar à Tela de Início.
+          </p>
         </div>
         <p class="status" id="status" aria-live="polite"></p>
         <p class="alt" id="alt">
@@ -439,8 +449,7 @@
           hint.innerHTML =
             '<p><strong>No Android:</strong> abra este link no celular → Instalar o app agora → toque em <strong>Abrir</strong> (não abra a pasta) → Instalar.</p>' +
             '<p><strong>iPhone:</strong> Safari → Compartilhar → Adicionar à Tela de Início.</p>';
-          alt.innerHTML =
-            'Desenvolvedor iOS: <a href="' + IOS_ZIP + '">projeto Xcode (.zip)</a>';
+          alt.innerHTML = 'Desenvolvedor iOS: <a href="' + IOS_ZIP + '">projeto Xcode (.zip)</a>';
         }
 
         fetch(APK, { method: 'HEAD', cache: 'no-store' })

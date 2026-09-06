@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { sendReportEmail } from '../email'
-import { normalizePhotos, normalizePhotoUrls } from '../photos'
-import { deleteReport, loadData } from '../storage'
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { sendReportEmail } from '../email';
+import { normalizePhotos, normalizePhotoUrls } from '../photos';
+import { deleteReport, loadData } from '../storage';
 
 export function HistoryPage() {
-  const reports = loadData().reports
+  const reports = loadData().reports;
 
   return (
     <div className="page">
@@ -19,7 +19,7 @@ export function HistoryPage() {
       ) : (
         <ul className="report-list tall">
           {reports.map((report) => {
-            const photos = normalizePhotoUrls(report)
+            const photos = normalizePhotoUrls(report);
             return (
               <li key={report.id}>
                 <Link to={`/historico/${report.id}`}>
@@ -31,20 +31,20 @@ export function HistoryPage() {
                   </span>
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       )}
     </div>
-  )
+  );
 }
 
 export function ReportDetailPage() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const report = loadData().reports.find((r) => r.id === id)
-  const [feedback, setFeedback] = useState<string | null>(null)
-  const [sending, setSending] = useState(false)
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const report = loadData().reports.find((r) => r.id === id);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
   if (!report) {
     return (
@@ -54,27 +54,27 @@ export function ReportDetailPage() {
           Voltar ao histórico
         </Link>
       </div>
-    )
+    );
   }
 
-  const photos = normalizePhotos(report)
+  const photos = normalizePhotos(report);
 
   async function handleResend() {
-    if (!report || sending) return
-    setSending(true)
-    setFeedback('Reenviando e-mail…')
+    if (!report || sending) return;
+    setSending(true);
+    setFeedback('Reenviando e-mail…');
     try {
-      await sendReportEmail(report)
+      await sendReportEmail(report);
       setFeedback(
         photos.length
           ? `E-mail reenviado com ${photos.length} foto(s) no corpo/anexo.`
           : 'E-mail reenviado pelo servidor.',
-      )
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Falha ao reenviar.'
-      setFeedback(message)
+      const message = error instanceof Error ? error.message : 'Falha ao reenviar.';
+      setFeedback(message);
     } finally {
-      setSending(false)
+      setSending(false);
     }
   }
 
@@ -124,7 +124,6 @@ export function ReportDetailPage() {
         <p className="obs-text">{report.observations || 'Sem observações.'}</p>
       </section>
 
-
       <section className="form-block">
         <div className="section-head">
           <h2>Assinaturas</h2>
@@ -173,15 +172,20 @@ export function ReportDetailPage() {
       {feedback ? <p className="feedback">{feedback}</p> : null}
 
       <div className="row-actions wrap">
-        <button type="button" className="btn primary" onClick={() => void handleResend()} disabled={sending}>
+        <button
+          type="button"
+          className="btn primary"
+          onClick={() => void handleResend()}
+          disabled={sending}
+        >
           {sending ? 'Enviando…' : 'Reenviar e-mail'}
         </button>
         <button
           type="button"
           className="btn ghost danger"
           onClick={() => {
-            deleteReport(report.id)
-            navigate('/historico')
+            deleteReport(report.id);
+            navigate('/historico');
           }}
         >
           Excluir
@@ -191,5 +195,5 @@ export function ReportDetailPage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }
