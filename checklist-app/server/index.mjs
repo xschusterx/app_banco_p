@@ -376,7 +376,7 @@ app.post('/api/send-email', sendLimiter, async (req, res) => {
 
 const releaseDir = join(rootDir, 'release')
 const downloadsDir = existsSync(releaseDir) ? releaseDir : join(rootDir, 'dist', 'downloads')
-const APK_FILE = 'task-flux-1.0.0.apk'
+const APK_FILE = 'task-flux-1.0.1.apk'
 const APK_DOWNLOAD_NAME = 'Task-Flux.apk'
 
 function sendApk(res, next, { asAttachment = true } = {}) {

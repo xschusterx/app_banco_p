@@ -5,12 +5,12 @@ Para sideload no celular use o **APK** (veja [INSTALL.md](./INSTALL.md)).
 
 ## Arquivos gerados
 
-- APK (sideload): `checklist-app/release/task-flux-1.0.0.apk`
+- APK (sideload): `checklist-app/release/task-flux-1.0.1.apk`
 - AAB (Play Store): `checklist-app/release/task-flux-1.0.0.aab`
 - Também em: `android/app/build/outputs/apk/release/app-release.apk` e `.../bundle/release/app-release.aab`
 
 - Pacote Android: `com.taskflux.app`
-- Versão: `1.0.0` (`versionCode` 1)
+- Versão: `1.0.1` (`versionCode` 2)
 - Nome do app: **Task-Flux**
 
 ## Gerar APK (sideload) ou AAB de novo
@@ -20,7 +20,7 @@ cd checklist-app
 npm install
 export VITE_EMAIL_API_URL=https://sua-api-publica.exemplo.com
 export ANDROID_HOME=$HOME/Android/Sdk
-npm run apk:android      # → release/task-flux-1.0.0.apk
+npm run apk:android      # → release/task-flux-1.0.1.apk
 # ou
 npm run bundle:android   # → release/task-flux-1.0.0.aab
 ```

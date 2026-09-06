@@ -46,7 +46,7 @@ npm run apk:android      # sideload .apk
 npm run bundle:android   # Play Store .aab
 ```
 
-- APK: `release/task-flux-1.0.0.apk`
+- APK: `release/task-flux-1.0.1.apk`
 - AAB: `release/task-flux-1.0.0.aab`
 
 Guia Play Store: [PLAY_STORE.md](./PLAY_STORE.md)
