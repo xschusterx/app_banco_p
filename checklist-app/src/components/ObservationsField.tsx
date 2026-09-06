@@ -37,7 +37,9 @@ export function ObservationsField({ value, onChange }: Props) {
             {listening ? 'Ouvindo… clique para parar' : 'Clique para transcrever'}
           </button>
         ) : (
-          <p className="hint">Seu navegador não oferece ditado por voz. Digite as observações normalmente.</p>
+          <p className="hint">
+            Seu navegador não oferece ditado por voz. Digite as observações normalmente.
+          </p>
         )}
         {error ? <p className="error">{error}</p> : null}
       </div>

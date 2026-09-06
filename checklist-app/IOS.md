@@ -37,10 +37,10 @@ No Xcode:
 
 Scripts:
 
-| Script | O que faz |
-| --- | --- |
-| `npm run build:ios` | Build web + `cap sync ios` |
-| `npm run open:ios` | Abre o projeto no Xcode (só no Mac) |
+| Script              | O que faz                           |
+| ------------------- | ----------------------------------- |
+| `npm run build:ios` | Build web + `cap sync ios`          |
+| `npm run open:ios`  | Abre o projeto no Xcode (só no Mac) |
 
 ## Permissões iOS
 

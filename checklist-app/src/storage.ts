@@ -1,5 +1,12 @@
 import { withSyncedPhotoFields } from './photos';
-import type { AppData, ChecklistItem, ChecklistPhoto, ChecklistReport, Contact, ContactGroup } from './types';
+import type {
+  AppData,
+  ChecklistItem,
+  ChecklistPhoto,
+  ChecklistReport,
+  Contact,
+  ContactGroup,
+} from './types';
 
 const STORAGE_KEY = 'task-flux-data-v2';
 const DRAFT_KEY = 'task-flux-draft-v1';
@@ -135,7 +142,9 @@ export function loadDraft(): ChecklistDraft | null {
       items: Array.isArray(parsed.items) ? (parsed.items as ChecklistItem[]) : [],
       observations: typeof parsed.observations === 'string' ? parsed.observations : '',
       photos: Array.isArray(parsed.photos) ? (parsed.photos as ChecklistPhoto[]) : [],
-      selectedGroupIds: Array.isArray(parsed.selectedGroupIds) ? parsed.selectedGroupIds.map(String) : [],
+      selectedGroupIds: Array.isArray(parsed.selectedGroupIds)
+        ? parsed.selectedGroupIds.map(String)
+        : [],
       selectedContactIds: Array.isArray(parsed.selectedContactIds)
         ? parsed.selectedContactIds.map(String)
         : [],
@@ -145,7 +154,9 @@ export function loadDraft(): ChecklistDraft | null {
         typeof parsed.authorSignatureDataUrl === 'string' ? parsed.authorSignatureDataUrl : null,
       verifierName: typeof parsed.verifierName === 'string' ? parsed.verifierName : '',
       verifierSignatureDataUrl:
-        typeof parsed.verifierSignatureDataUrl === 'string' ? parsed.verifierSignatureDataUrl : null,
+        typeof parsed.verifierSignatureDataUrl === 'string'
+          ? parsed.verifierSignatureDataUrl
+          : null,
       updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
     };
   } catch {

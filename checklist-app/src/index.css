@@ -95,7 +95,9 @@ body {
     radial-gradient(900px 500px at 100% 0%, var(--body-glow-b), transparent 45%),
     linear-gradient(180deg, var(--body-base-top) 0%, var(--fog) 40%, var(--body-base-bottom) 100%);
   color: var(--ink);
-  transition: background 0.25s ease, color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 a {
@@ -161,7 +163,10 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .theme-toggle:hover {
@@ -214,7 +219,10 @@ textarea {
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--ink-soft);
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .nav a:hover {
@@ -375,7 +383,10 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .btn:hover {
@@ -567,7 +578,9 @@ textarea {
   border-radius: 14px;
   background: var(--fog);
   border: 1px solid transparent;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .report-list a:hover {
@@ -623,7 +636,9 @@ textarea {
   background: var(--input-bg);
   color: var(--ink);
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .field input:focus,
@@ -689,7 +704,9 @@ textarea {
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.18s ease, transform 0.18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .btn-remove-item:hover {
@@ -722,15 +739,16 @@ textarea {
   min-height: 210px;
   border: 1.5px dashed rgba(47, 90, 72, 0.35);
   border-radius: 16px;
-  background:
-    linear-gradient(180deg, rgba(231, 238, 232, 0.8), rgba(243, 247, 244, 0.95));
+  background: linear-gradient(180deg, rgba(231, 238, 232, 0.8), rgba(243, 247, 244, 0.95));
   color: var(--moss);
   font-weight: 700;
   display: grid;
   place-items: center;
   gap: 0.55rem;
   cursor: pointer;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .photo-empty:hover {
@@ -1011,7 +1029,6 @@ textarea {
   }
 }
 
-
 /* Observação por foto */
 .photo-grid-notes {
   grid-template-columns: 1fr;
@@ -1142,7 +1159,6 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 
 /* —— Assinaturas obrigatórias —— */
 .signatures-block .section-head p {

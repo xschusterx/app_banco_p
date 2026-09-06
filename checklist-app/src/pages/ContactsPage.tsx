@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import {
-  deleteContact,
-  deleteGroup,
-  loadData,
-  uid,
-  upsertContact,
-  upsertGroup,
-} from '../storage';
+import { deleteContact, deleteGroup, loadData, uid, upsertContact, upsertGroup } from '../storage';
 import type { Contact, ContactGroup } from '../types';
 
 function parseEmails(raw: string): string[] {
@@ -119,8 +112,8 @@ export function ContactsPage() {
       <header className="page-intro">
         <h1>Contatos de e-mail</h1>
         <p>
-          Cadastre contatos individuais e também grupos com vários e-mails para selecionar no envio do
-          checklist.
+          Cadastre contatos individuais e também grupos com vários e-mails para selecionar no envio
+          do checklist.
         </p>
       </header>
 
@@ -178,7 +171,9 @@ export function ContactsPage() {
             rows={4}
             value={groupEmailsText}
             onChange={(e) => setGroupEmailsText(e.target.value)}
-            placeholder={'Um e-mail por linha, ou separados por vírgula\ncarla@empresa.com\njoao@empresa.com'}
+            placeholder={
+              'Um e-mail por linha, ou separados por vírgula\ncarla@empresa.com\njoao@empresa.com'
+            }
           />
         </label>
         <div className="row-actions">
@@ -208,7 +203,11 @@ export function ContactsPage() {
                 <span>{contact.email}</span>
               </div>
               <div className="row-actions">
-                <button type="button" className="btn ghost" onClick={() => startEditContact(contact)}>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => startEditContact(contact)}
+                >
                   Editar
                 </button>
                 <button
@@ -241,7 +240,11 @@ export function ContactsPage() {
                 <button type="button" className="btn ghost" onClick={() => startEditGroup(group)}>
                   Editar
                 </button>
-                <button type="button" className="btn ghost danger" onClick={() => removeGroup(group.id)}>
+                <button
+                  type="button"
+                  className="btn ghost danger"
+                  onClick={() => removeGroup(group.id)}
+                >
                   Excluir
                 </button>
               </div>

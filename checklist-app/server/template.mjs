@@ -4,7 +4,7 @@ function escapeHtml(value) {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
+    .replaceAll("'", '&#39;');
 }
 
 function formatDate(iso) {
@@ -16,50 +16,52 @@ function formatDate(iso) {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    })
+    });
   } catch {
-    return String(iso || '')
+    return String(iso || '');
   }
 }
 
 export function buildTextEmail(report) {
-  const lines = []
-  lines.push('TASK-FLUX — Relatório de checklist')
-  lines.push('='.repeat(36))
-  lines.push(`Título: ${report.title}`)
-  if (report.location) lines.push(`Veículo / placa: ${report.location}`)
-  lines.push(`Data: ${formatDate(report.createdAt)}`)
-  lines.push('')
-  lines.push('Itens verificados:')
+  const lines = [];
+  lines.push('TASK-FLUX — Relatório de checklist');
+  lines.push('='.repeat(36));
+  lines.push(`Título: ${report.title}`);
+  if (report.location) lines.push(`Veículo / placa: ${report.location}`);
+  lines.push(`Data: ${formatDate(report.createdAt)}`);
+  lines.push('');
+  lines.push('Itens verificados:');
   for (const item of report.items || []) {
-    lines.push(`  ${item.done ? '[x]' : '[ ]'} ${item.label}`)
+    lines.push(`  ${item.done ? '[x]' : '[ ]'} ${item.label}`);
   }
-  lines.push('')
-  lines.push('Observações:')
-  lines.push(report.observations || '(sem observações)')
+  lines.push('');
+  lines.push('Observações:');
+  lines.push(report.observations || '(sem observações)');
   if (report.hasPhoto) {
-    const count = Number(report.photoCount) || 1
-    lines.push('')
-    lines.push(count === 1 ? '1 foto anexada neste e-mail.' : `${count} fotos anexadas neste e-mail.`)
-    const notes = Array.isArray(report.photoNotes) ? report.photoNotes : []
+    const count = Number(report.photoCount) || 1;
+    lines.push('');
+    lines.push(
+      count === 1 ? '1 foto anexada neste e-mail.' : `${count} fotos anexadas neste e-mail.`,
+    );
+    const notes = Array.isArray(report.photoNotes) ? report.photoNotes : [];
     notes.forEach((note, index) => {
-      if (note) lines.push(`  Foto ${index + 1}: ${note}`)
-    })
+      if (note) lines.push(`  Foto ${index + 1}: ${note}`);
+    });
   }
-  lines.push('')
-  lines.push('Assinaturas:')
+  lines.push('');
+  lines.push('Assinaturas:');
   if (report.authorName) {
-    lines.push(`  Responsável: ${report.authorName}`)
+    lines.push(`  Responsável: ${report.authorName}`);
   }
   if (report.verifierName) {
-    lines.push(`  Conferente: ${report.verifierName}`)
+    lines.push(`  Conferente: ${report.verifierName}`);
   }
   if (!report.authorName && !report.verifierName) {
-    lines.push('  (sem assinaturas)')
+    lines.push('  (sem assinaturas)');
   }
-  lines.push('')
-  lines.push('— Enviado automaticamente pelo Task-Flux')
-  return lines.join('\n')
+  lines.push('');
+  lines.push('— Enviado automaticamente pelo Task-Flux');
+  return lines.join('\n');
 }
 
 /**
@@ -67,18 +69,18 @@ export function buildTextEmail(report) {
  * Fotos aparecem no corpo via cid: (inlinePhotoCids) e também como anexos.
  */
 export function buildHtmlEmail(report) {
-  const doneCount = (report.items || []).filter((i) => i.done).length
-  const totalCount = (report.items || []).length
-  const photoCount = Number(report.photoCount) || (report.inlinePhotoCids || []).length || 0
+  const doneCount = (report.items || []).filter((i) => i.done).length;
+  const totalCount = (report.items || []).length;
+  const photoCount = Number(report.photoCount) || (report.inlinePhotoCids || []).length || 0;
 
   const itemsHtml = (report.items || [])
     .map((item) => {
-      const done = Boolean(item.done)
-      const bg = done ? '#e8f5ef' : '#f7f7f5'
-      const border = done ? '#b7d9c8' : '#e5e7eb'
-      const markBg = done ? '#1b6b4a' : '#d1d5db'
-      const mark = done ? '✓' : ''
-      const labelColor = done ? '#143528' : '#4b5563'
+      const done = Boolean(item.done);
+      const bg = done ? '#e8f5ef' : '#f7f7f5';
+      const border = done ? '#b7d9c8' : '#e5e7eb';
+      const markBg = done ? '#1b6b4a' : '#d1d5db';
+      const mark = done ? '✓' : '';
+      const labelColor = done ? '#143528' : '#4b5563';
       return `
         <tr>
           <td style="padding:0 0 8px;">
@@ -93,13 +95,13 @@ export function buildHtmlEmail(report) {
               </tr>
             </table>
           </td>
-        </tr>`
+        </tr>`;
     })
-    .join('')
+    .join('');
 
-
-  const signaturesHtml = report.authorSignatureCid || report.verifierSignatureCid
-    ? `
+  const signaturesHtml =
+    report.authorSignatureCid || report.verifierSignatureCid
+      ? `
       <tr>
         <td style="padding:8px 28px 8px;">
           <h2 style="margin:0 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#1b6b4a;">Assinaturas</h2>
@@ -123,18 +125,21 @@ export function buildHtmlEmail(report) {
           </table>
         </td>
       </tr>`
-    : ''
+      : '';
 
-  const photosHtml = Array.isArray(report.inlinePhotoCids) && report.inlinePhotoCids.length
-    ? `
+  const photosHtml =
+    Array.isArray(report.inlinePhotoCids) && report.inlinePhotoCids.length
+      ? `
       <tr>
         <td style="padding:8px 28px 8px;">
           <h2 style="margin:0 0 12px;font-size:15px;letter-spacing:0.04em;text-transform:uppercase;color:#1b6b4a;">Fotos do checklist</h2>
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
             ${report.inlinePhotoCids
               .map((cid, i) => {
-                const n = i + 1
-                const note = Array.isArray(report.photoNotes) ? String(report.photoNotes[i] || '').trim() : ''
+                const n = i + 1;
+                const note = Array.isArray(report.photoNotes)
+                  ? String(report.photoNotes[i] || '').trim()
+                  : '';
                 return `
               <tr>
                 <td style="padding:0 0 14px;">
@@ -156,14 +161,14 @@ export function buildHtmlEmail(report) {
                     </tr>
                   </table>
                 </td>
-              </tr>`
+              </tr>`;
               })
               .join('')}
           </table>
         </td>
       </tr>`
-    : report.hasPhoto
-      ? `
+      : report.hasPhoto
+        ? `
       <tr>
         <td style="padding:8px 28px 20px;">
           <p style="margin:0;padding:12px 14px;background:#eef6f1;border-radius:10px;color:#1b6b4a;font-size:13px;">
@@ -171,7 +176,7 @@ export function buildHtmlEmail(report) {
           </p>
         </td>
       </tr>`
-      : ''
+        : '';
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -269,5 +274,5 @@ export function buildHtmlEmail(report) {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
 }

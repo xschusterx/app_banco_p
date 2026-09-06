@@ -43,16 +43,16 @@ Rotacione `APP_SEND_TOKEN` se o APK vazar e rebuild o app. Para dados sensíveis
 
 ## Variáveis de ambiente (obrigatórias em produção)
 
-| Variável | Obrigatória | Descrição |
-|----------|-------------|-----------|
-| `RESEND_API_KEY` | sim | Chave `re_…` da Resend |
-| `RESEND_FROM` | sim* | Remetente com domínio verificado |
-| `APP_SEND_TOKEN` | **sim** se `NODE_ENV=production` | Segredo no header `X-App-Token` |
-| `CORS_ORIGIN` | recomendado | Origens permitidas, separadas por vírgula |
-| `PORT` | não | Padrão `8787` |
-| `NODE_ENV` | sim | `production` |
-| `VITE_EMAIL_API_URL` | no build web/APK | URL pública HTTPS da API (ou vazio = mesma origem) |
-| `VITE_APP_SEND_TOKEN` | no build se token ativo | Mesmo valor de `APP_SEND_TOKEN` |
+| Variável              | Obrigatória                      | Descrição                                          |
+| --------------------- | -------------------------------- | -------------------------------------------------- |
+| `RESEND_API_KEY`      | sim                              | Chave `re_…` da Resend                             |
+| `RESEND_FROM`         | sim\*                            | Remetente com domínio verificado                   |
+| `APP_SEND_TOKEN`      | **sim** se `NODE_ENV=production` | Segredo no header `X-App-Token`                    |
+| `CORS_ORIGIN`         | recomendado                      | Origens permitidas, separadas por vírgula          |
+| `PORT`                | não                              | Padrão `8787`                                      |
+| `NODE_ENV`            | sim                              | `production`                                       |
+| `VITE_EMAIL_API_URL`  | no build web/APK                 | URL pública HTTPS da API (ou vazio = mesma origem) |
+| `VITE_APP_SEND_TOKEN` | no build se token ativo          | Mesmo valor de `APP_SEND_TOKEN`                    |
 
 \* Em testes locais pode usar `Task-Flux <onboarding@resend.dev>`.
 

@@ -1,75 +1,75 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { MAX_PHOTOS, compressImageFile } from '../photos'
-import type { ChecklistPhoto } from '../types'
+import { useEffect, useId, useRef, useState } from 'react';
+import { MAX_PHOTOS, compressImageFile } from '../photos';
+import type { ChecklistPhoto } from '../types';
 
 type Props = {
-  photos: ChecklistPhoto[]
-  onChange: (photos: ChecklistPhoto[]) => void
-}
+  photos: ChecklistPhoto[];
+  onChange: (photos: ChecklistPhoto[]) => void;
+};
 
 type PendingNote = {
-  dataUrl: string
-  indexLabel: string
-}
+  dataUrl: string;
+  indexLabel: string;
+};
 
 export function PhotoCapture({ photos, onChange }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const noteInputRef = useRef<HTMLTextAreaElement>(null)
-  const noteFieldId = useId()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [pendingQueue, setPendingQueue] = useState<string[]>([])
-  const [draftNote, setDraftNote] = useState('')
-  const remaining = MAX_PHOTOS - photos.length
+  const inputRef = useRef<HTMLInputElement>(null);
+  const noteInputRef = useRef<HTMLTextAreaElement>(null);
+  const noteFieldId = useId();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingQueue, setPendingQueue] = useState<string[]>([]);
+  const [draftNote, setDraftNote] = useState('');
+  const remaining = MAX_PHOTOS - photos.length;
   const pending: PendingNote | null = pendingQueue.length
     ? {
         dataUrl: pendingQueue[0],
         indexLabel: String(photos.length + 1),
       }
-    : null
+    : null;
 
+  const pendingDataUrl = pending?.dataUrl;
   useEffect(() => {
-    if (pending) {
-      setDraftNote('')
-      const timer = window.setTimeout(() => noteInputRef.current?.focus(), 50)
-      return () => window.clearTimeout(timer)
-    }
-  }, [pending?.dataUrl])
+    if (!pendingDataUrl) return;
+    setDraftNote('');
+    const timer = window.setTimeout(() => noteInputRef.current?.focus(), 50);
+    return () => window.clearTimeout(timer);
+  }, [pendingDataUrl]);
 
   async function handleFiles(fileList: FileList | null) {
-    if (!fileList?.length || remaining <= 0 || pendingQueue.length) return
-    setBusy(true)
-    setError(null)
+    if (!fileList?.length || remaining <= 0 || pendingQueue.length) return;
+    setBusy(true);
+    setError(null);
     try {
       const files = Array.from(fileList)
         .filter((file) => file.type.startsWith('image/'))
-        .slice(0, remaining)
-      const compressed: string[] = []
+        .slice(0, remaining);
+      const compressed: string[] = [];
       for (const file of files) {
-        compressed.push(await compressImageFile(file))
+        compressed.push(await compressImageFile(file));
       }
-      if (compressed.length) setPendingQueue(compressed)
+      if (compressed.length) setPendingQueue(compressed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao adicionar foto.')
+      setError(err instanceof Error ? err.message : 'Falha ao adicionar foto.');
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
   function commitPending(note: string) {
-    if (!pendingQueue.length) return
-    const [dataUrl, ...rest] = pendingQueue
-    onChange([...photos, { dataUrl, note: note.trim() }])
-    setPendingQueue(rest)
-    setDraftNote('')
+    if (!pendingQueue.length) return;
+    const [dataUrl, ...rest] = pendingQueue;
+    onChange([...photos, { dataUrl, note: note.trim() }]);
+    setPendingQueue(rest);
+    setDraftNote('');
   }
 
   function removeAt(index: number) {
-    onChange(photos.filter((_, i) => i !== index))
+    onChange(photos.filter((_, i) => i !== index));
   }
 
   function updateNote(index: number, note: string) {
-    onChange(photos.map((photo, i) => (i === index ? { ...photo, note } : photo)))
+    onChange(photos.map((photo, i) => (i === index ? { ...photo, note } : photo)));
   }
 
   return (
@@ -121,7 +121,11 @@ export function PhotoCapture({ photos, onChange }: Props) {
           disabled={busy}
         >
           {photos.length ? (
-            busy ? 'Processando…' : `Adicionar foto (${photos.length}/${MAX_PHOTOS})`
+            busy ? (
+              'Processando…'
+            ) : (
+              `Adicionar foto (${photos.length}/${MAX_PHOTOS})`
+            )
           ) : (
             <>
               <span className="photo-empty-icon" aria-hidden />
@@ -145,19 +149,26 @@ export function PhotoCapture({ photos, onChange }: Props) {
         multiple
         className="sr-only"
         onChange={(e) => {
-          void handleFiles(e.target.files)
-          e.target.value = ''
+          void handleFiles(e.target.files);
+          e.target.value = '';
         }}
       />
 
       {pending ? (
-        <div className="photo-note-modal" role="dialog" aria-modal="true" aria-labelledby={noteFieldId}>
+        <div
+          className="photo-note-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={noteFieldId}
+        >
           <div className="photo-note-card">
             <div className="photo-note-preview">
               <img src={pending.dataUrl} alt={`Prévia da foto ${pending.indexLabel}`} />
             </div>
             <h3 id={noteFieldId}>Observação desta foto?</h3>
-            <p>Opcional. Se quiser, descreva o que a foto mostra — aparece no e-mail sob a imagem.</p>
+            <p>
+              Opcional. Se quiser, descreva o que a foto mostra — aparece no e-mail sob a imagem.
+            </p>
             <textarea
               ref={noteInputRef}
               rows={3}
@@ -170,7 +181,11 @@ export function PhotoCapture({ photos, onChange }: Props) {
               <button type="button" className="btn ghost" onClick={() => commitPending('')}>
                 Pular
               </button>
-              <button type="button" className="btn primary" onClick={() => commitPending(draftNote)}>
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => commitPending(draftNote)}
+              >
                 Salvar observação
               </button>
             </div>
@@ -181,5 +196,5 @@ export function PhotoCapture({ photos, onChange }: Props) {
         </div>
       ) : null}
     </section>
-  )
+  );
 }

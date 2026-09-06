@@ -51,7 +51,11 @@ export function HomePage() {
         <div className="section-head row">
           <div>
             <h2>Últimos envios</h2>
-            <p>{recent.length ? 'Relatórios salvos neste aparelho.' : 'Ainda não há checklists enviados.'}</p>
+            <p>
+              {recent.length
+                ? 'Relatórios salvos neste aparelho.'
+                : 'Ainda não há checklists enviados.'}
+            </p>
           </div>
           <Link to="/historico" className="text-link">
             Ver histórico
