@@ -288,6 +288,7 @@ export function NewChecklistPage() {
       verifierSignature: verifier,
       createdAt: new Date().toISOString(),
       sentTo: emails,
+      sentAt: null,
     };
 
     setSending(true);
@@ -298,7 +299,12 @@ export function NewChecklistPage() {
     );
     try {
       const result = await sendReportEmail(report);
-      saveReport(report);
+      const sentReport: ChecklistReport = {
+        ...report,
+        sentTo: result.sentTo,
+        sentAt: new Date().toISOString(),
+      };
+      saveReport(sentReport);
       clearDraft();
       setFeedback(
         photos.length
@@ -306,14 +312,60 @@ export function NewChecklistPage() {
           : `Enviado para ${result.sentTo.join(', ')}.`,
       );
       setSending(false);
-      setTimeout(() => navigate(`/historico/${report.id}`), 900);
+      setTimeout(() => navigate(`/historico/${sentReport.id}`), 900);
     } catch (error) {
       saveReport(report);
+      clearDraft();
       const message = error instanceof Error ? error.message : 'Não foi possível enviar o e-mail.';
-      setFeedback(`Checklist salvo neste aparelho. ${message}`);
+      setFeedback(`Checklist salvo para enviar depois. ${message}`);
       setEmailReady(getCachedEmailConfigured());
       setSending(false);
+      setTimeout(() => navigate(`/historico/${report.id}`), 1200);
     }
+  }
+
+  function handleSaveForLater() {
+    if (sending) return;
+    if (!title.trim()) {
+      setFeedback('Informe um título para o checklist.');
+      return;
+    }
+
+    const author = buildSignature(authorName, authorSignatureDataUrl);
+    const verifier = buildSignature(verifierName, verifierSignatureDataUrl);
+    if (!isSignatureComplete(author)) {
+      setFeedback('Assine como responsável antes de salvar para enviar depois.');
+      return;
+    }
+    if (!isSignatureComplete(verifier)) {
+      setFeedback('Assine como conferente antes de salvar para enviar depois.');
+      return;
+    }
+
+    const emails = collectEmails();
+    const photoFields = photosToReportFields(photos);
+    const report: ChecklistReport = {
+      id: uid(),
+      title: title.trim(),
+      location: location.trim(),
+      items,
+      observations: observations.trim(),
+      ...photoFields,
+      authorSignature: author,
+      verifierSignature: verifier,
+      createdAt: new Date().toISOString(),
+      sentTo: emails,
+      sentAt: null,
+    };
+
+    saveReport(report);
+    clearDraft();
+    setFeedback(
+      emails.length
+        ? 'Checklist salvo. Você pode enviar o e-mail depois no histórico.'
+        : 'Checklist salvo. No histórico, informe o destinatário e envie quando quiser.',
+    );
+    setTimeout(() => navigate(`/historico/${report.id}`), 700);
   }
 
   return (
@@ -321,8 +373,8 @@ export function NewChecklistPage() {
       <header className="page-intro">
         <h1>Novo checklist</h1>
         <p>
-          Tire fotos, marque os itens e envie. No final, o responsável e o conferente precisam
-          assinar. O e-mail sai pelo servidor Task-Flux — sem abrir sua caixa de entrada.
+          Tire fotos, marque os itens e assine. Você pode <strong>salvar para enviar depois</strong>{' '}
+          ou finalizar já com o e-mail pelo servidor Task-Flux.
         </p>
       </header>
 
@@ -449,6 +501,14 @@ export function NewChecklistPage() {
         </button>
         <button
           type="button"
+          className="btn secondary wide"
+          onClick={handleSaveForLater}
+          disabled={sending || !signaturesReady}
+        >
+          {signaturesReady ? 'Salvar para enviar depois' : 'Assine para salvar'}
+        </button>
+        <button
+          type="button"
           className="btn primary wide"
           onClick={() => void handleFinish()}
           disabled={sending || emailReady === false || !signaturesReady}
@@ -456,8 +516,8 @@ export function NewChecklistPage() {
           {sending
             ? 'Enviando…'
             : signaturesReady
-              ? 'Finalizar e enviar pelo servidor'
-              : 'Assine para finalizar'}
+              ? 'Finalizar e enviar agora'
+              : 'Assine para enviar'}
         </button>
       </div>
     </div>

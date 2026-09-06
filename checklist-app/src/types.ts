@@ -50,6 +50,13 @@ export type ChecklistReport = {
   verifierSignature?: ChecklistSignature | null;
   createdAt: string;
   sentTo: string[];
+  /**
+   * Quando o e-mail foi enviado.
+   * - `null` = salvo para enviar depois
+   * - ISO string = já enviado
+   * - `undefined` = histórico antigo (tratado como enviado)
+   */
+  sentAt?: string | null;
 };
 
 export type AppData = {

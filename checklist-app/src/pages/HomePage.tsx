@@ -50,11 +50,11 @@ export function HomePage() {
       <section className="home-panel">
         <div className="section-head row">
           <div>
-            <h2>Últimos envios</h2>
+            <h2>Últimos checklists</h2>
             <p>
               {recent.length
-                ? 'Relatórios salvos neste aparelho.'
-                : 'Ainda não há checklists enviados.'}
+                ? 'Salvos neste aparelho — inclusive os pendentes de envio.'
+                : 'Ainda não há checklists salvos.'}
             </p>
           </div>
           <Link to="/historico" className="text-link">
@@ -67,7 +67,10 @@ export function HomePage() {
               <li key={report.id}>
                 <Link to={`/historico/${report.id}`}>
                   <strong>{report.title}</strong>
-                  <span>{new Date(report.createdAt).toLocaleString('pt-BR')}</span>
+                  <span>
+                    {new Date(report.createdAt).toLocaleString('pt-BR')}
+                    {report.sentAt === null ? ' · Pendente de envio' : ''}
+                  </span>
                 </Link>
               </li>
             ))}
