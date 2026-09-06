@@ -403,7 +403,8 @@ textarea {
 
 .btn.ghost.light {
   background: rgba(244, 250, 246, 0.14);
-  color: var(--on-strong);
+  /* Sempre branco: fica sobre a foto do hero (claro ou escuro). */
+  color: #ffffff;
   border: 1px solid rgba(244, 250, 246, 0.24);
 }
 
