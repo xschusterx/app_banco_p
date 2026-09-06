@@ -1,6 +1,8 @@
 import cors from 'cors'
 import express from 'express'
 import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
+import { timingSafeEqual } from 'node:crypto'
 import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -81,17 +83,60 @@ function buildCorsOptions() {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
+  // Em produção nunca aceite wildcard aberto, mesmo se alguém setar CORS_ORIGIN=*.
+  if (IS_PROD && allowed.includes('*')) {
+    console.warn('[cors] Ignorando "*" em CORS_ORIGIN no modo production.')
+  }
+  const allowList = IS_PROD ? allowed.filter((o) => o !== '*') : allowed
   return {
     origin(origin, callback) {
       if (!origin) return callback(null, true)
-      if (allowed.includes(origin) || allowed.includes('*')) return callback(null, true)
+      if (allowList.includes(origin)) return callback(null, true)
+      if (!IS_PROD && allowList.includes('*')) return callback(null, true)
       return callback(null, false)
     },
   }
 }
 
+/** Comparação de token em tempo constante (evita timing attack). */
+function tokensEqual(provided, expected) {
+  const a = Buffer.from(String(provided))
+  const b = Buffer.from(String(expected))
+  if (a.length !== b.length) {
+    timingSafeEqual(b, b)
+    return false
+  }
+  return timingSafeEqual(a, b)
+}
+
 const app = express()
 app.set('trust proxy', 1)
+app.use(
+  helmet({
+    // SPA + PWA + fonte Google + script inline de tema no index.html
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'"],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        'img-src': ["'self'", 'data:', 'blob:'],
+        'connect-src': ["'self'"],
+        'worker-src': ["'self'", 'blob:'],
+        'manifest-src': ["'self'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'object-src': ["'none'"],
+        'upgrade-insecure-requests': [],
+      },
+    },
+    // Railway já termina TLS; HSTS reforça no cliente.
+    hsts: IS_PROD ? { maxAge: 15552000, includeSubDomains: true } : false,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  }),
+)
 app.use(cors(buildCorsOptions()))
 // Várias fotos comprimidas ainda podem passar de 5 MB no JSON.
 app.use(express.json({ limit: '20mb' }))
@@ -143,7 +188,7 @@ function collectPhotoDataUrls(body) {
 function requireAppToken(req, res) {
   if (!APP_SEND_TOKEN) return true
   const header = req.get('x-app-token') || ''
-  if (header !== APP_SEND_TOKEN) {
+  if (!tokensEqual(header, APP_SEND_TOKEN)) {
     res.status(401).json({ error: 'Token do aplicativo inválido.' })
     return false
   }

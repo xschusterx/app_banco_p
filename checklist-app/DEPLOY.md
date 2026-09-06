@@ -25,6 +25,22 @@ Estas etapas **não dá para fechar só no código**:
 
 Sem domínio verificado, o remetente `onboarding@resend.dev` só entrega no e-mail da **sua** conta Resend.
 
+## Segurança (já aplicado no código)
+
+- Headers HTTP via `helmet` (CSP, HSTS em produção, `X-Content-Type-Options`, `Referrer-Policy`, etc.)
+- `APP_SEND_TOKEN` comparado com `crypto.timingSafeEqual`
+- Em produção, `CORS_ORIGIN=*` é **ignorado** (não abre wildcard)
+- Android: `android:allowBackup="false"` (evita backup automático de contatos/histórico/fotos)
+
+### Limitações que ainda existem
+
+- `VITE_APP_SEND_TOKEN` entra no APK/web build e **pode ser extraído** — trate como segredo compartilhado da equipe, não como autenticação forte
+- Dados do app ficam em `localStorage` **sem criptografia** no aparelho
+- O APK em `/install.apk` é público (qualquer um com o link baixa)
+- Sem login por usuário — quem tiver o token pode disparar e-mail pela sua conta Resend
+
+Rotacione `APP_SEND_TOKEN` se o APK vazar e rebuild o app. Para dados sensíveis, o próximo passo é autenticação por usuário.
+
 ## Variáveis de ambiente (obrigatórias em produção)
 
 | Variável | Obrigatória | Descrição |
